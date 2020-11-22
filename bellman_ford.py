@@ -5,25 +5,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import cvxpy as cvx
 import numpy as np
-import math, urllib2, json, re
+import re
+import fetch
 
-
-def download():
-	graph = {}
-	page = urllib2.urlopen("http://fx.priceonomics.com/v1/rates/?q=1")
-	jsrates = json.loads(page.read())
-
-	pattern = re.compile("([A-Z]{3})_([A-Z]{3})")
-	for key in jsrates:
-		matches = pattern.match(key)
-		conversion_rate = -math.log(float(jsrates[key]))
-		from_rate = matches.group(1).encode('ascii','ignore')
-		to_rate = matches.group(2).encode('ascii','ignore')
-		if from_rate != to_rate:
-			if from_rate not in graph:
-				graph[from_rate] = {}
-			graph[from_rate][to_rate] = float(conversion_rate)
-	return graph
 
 # Step 1: For each node prepare the destination and predecessor
 def initialize(graph, source):
@@ -36,10 +20,11 @@ def initialize(graph, source):
     return d, p
  
 def relax(node, neighbour, graph, d, p):
+    fee = -math.log(1 - 0.001)
     # If the distance between the node and the neighbour is lower than the one I have now
-    if d[neighbour] > d[node] + graph[node][neighbour]:
+    if d[neighbour] > d[node] + graph[node][neighbour]['weight'] + fee:
         # Record this lower distance
-        d[neighbour]  = d[node] + graph[node][neighbour]
+        d[neighbour]  = d[node] + graph[node][neighbour]['weight'] + fee
         p[neighbour] = node
  
 def retrace_negative_loop(p, start):
@@ -66,31 +51,26 @@ def bellman_ford(graph, source):
     # Step 3: check for negative-weight cycles
     for u in graph:
         for v in graph[u]:
-        	if d[v] < d[u] + graph[u][v]:
+        	if d[v] < d[u] + graph[u][v]['weight']:
         		return(retrace_negative_loop(p, source))
     return None
 
-paths = []
 
-graph = download()
+def collect_negative_cycle():
+    binance = ccxt.binance({
+    'apiKey': '!',
+    'secret': '!', })
+    
+    paths = []
+    graph = fetch_exchange('binance', binance)
 
-for key in graph:
-	path = bellman_ford(graph, key)
-	if path not in paths and not None:
-		paths.append(path)
+    for key in graph:
+        path = bellman_ford(graph, key)
+        if path not in paths and not None:
+            paths.append(path)
 
-for path in paths:
-	if path == None:
-		print("No opportunity here :(")
-	else:
-		money = 100
-		print "Starting with %(money)i in %(currency)s" % {"money":money,"currency":path[0]}
-
-		for i,value in enumerate(path):
-			if i+1 < len(path):
-				start = path[i]
-				end = path[i+1]
-				rate = math.exp(-graph[start][end])
-				money *= rate
-				print "%(start)s to %(end)s at %(rate)f = %(money)f" % {"start":start,"end":end,"rate":rate,"money":money}
-	print "\n"
+    for path in paths:
+        if path == None:
+            print("No opportunity here :(")
+        else:
+            print(path)
