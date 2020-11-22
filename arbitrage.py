@@ -20,7 +20,7 @@ def fetch_exchange(exch_name, exch):
     nodes = set()
     edges = []
     # load markets
-    exch.load_markets(True)
+    market = exch.load_markets(True)
     #huobi.load_markets(True)
 
     if (exch.has['fetchTickers']):
@@ -36,10 +36,12 @@ def fetch_exchange(exch_name, exch):
                     try:
                         w_to = -math.log(1 / float(exch_tickers[symbol]['info']['askPrice']))
                         w_from = - math.log(float(exch_tickers[symbol]['info']['askPrice']))
-                        fee = 1 - 0.0001
+                        precision = int(market[symbol]['precision']['amount'])
+                        fee = 1 - 0.001
                     except:
                         w_to = float('inf')
                         w_from = float('inf')
+                        precision = 1
                         fee = 0
                 else:
                     try:
@@ -50,8 +52,8 @@ def fetch_exchange(exch_name, exch):
                         w_to = float('inf')
                         w_from = float('inf')
                         fee = 0
-                edges.append((node_from, node_to, dict(c='buy', d='direct', weight=w_to, fee=fee)))
-                edges.append((node_to, node_from, dict(c='sell', d='reverse', weight=w_from, fee=fee)))
+                edges.append((node_from, node_to, dict(c='buy', d='direct', weight=w_to, fee=fee, p=precision)))
+                edges.append((node_to, node_from, dict(c='sell', d='reverse', weight=w_from, fee=fee, p=precision)))
             except:
                 print('symbol error')
     return nodes, edges
@@ -106,7 +108,7 @@ def _bellman_ford_relaxation(G, pred, dist, source, weight):
     q = deque(source)
     in_q = set(source)
     counter = 0
-    fee = -math.log(1 - 0.00026)
+    fee = -math.log(1 - 0.001)
     #fee = - np.log2(0.9975)
     while q and counter <= n * n:
         counter += 1
@@ -196,16 +198,10 @@ def pre_optimize(G, cycle, exchanges, depth):
         symb_next = x_next.split('.')[0]
         exch = exchanges[exch_curr]
         if G[x_curr][x_next]['d'] == 'direct':
-            symb_curr, exch_curr = x_curr.split('.')
-            symb_next = x_next.split('.')[0]
-            exch = exchanges[exch_curr]
             symb = symb_next + '/' + symb_curr
             orderbook = exch.fetch_order_book(symb)['asks'][0:depth]
             #orderbook = exch.get_orderbook(market, depth_type='sell', depth=depth)
         else:
-            symb_curr, exch_curr = x_curr.split('.')
-            symb_next = x_next.split('.')[0]
-            exch = exchanges[exch_curr]
             symb = symb_curr + '/' + symb_next
             orderbook = exch.fetch_order_book(symb)['bids'][0:depth]
             #orderbook = exch.get_orderbook(market, depth_type='buy', depth=depth)'''
@@ -220,36 +216,95 @@ def pre_optimize(G, cycle, exchanges, depth):
             Volumes[i] *= Rates[i]
             Rates[i] = 1 / Rates[i]
     return Volumes, Rates, Fees, Orders
-
-def trade(path, orders, coeffs, G, exch_dict):
-    exchange = exch_dict['kraken']
+    
+def trade(path, trade_args, G):
+    exchange = ccxt.binance({ 'apiKey': '-',
+        'secret': '-', })
     for i in range(len(path) - 1):
         x_curr = path[i]
         x_next = path[i + 1]
         symb_curr = x_curr.split('.')[0]
         symb_next = x_next.split('.')[0]
+        market = ''
         if G[x_curr][x_next]['d'] == 'direct':
             market = symb_next + '/' + symb_curr
-            for order, coeff in zip(orders[i], coeffs[i]):
-                # print(market, order[0], coeff, order[1])
-                # print(type(market), type(order[0]), type(coeff), type(order[1]))
-                if coeff > 0.001:
-                    #binance.buy(market, order[0]*coeff, order[1])
-                    exchange.create_limit_buy_order(market, float(order[1]) * coeff, float(order[0]))
+            price = trade_args[i][0]
+            volume = trade_args[i][1]
+            try:
+                exchange.create_limit_buy_order(market, volume, price)
+            except:
+                time.sleep(0.05)
+                exchange.create_limit_buy_order(market, volume, price)
         else:
             market = symb_curr + '/' + symb_next
-            for order, coeff in zip(orders[i], coeffs[i]):
-                # print(market, order[0], coeff, order[1])
-                # print(type(market), type(order[0]), type(coeff), type(order[1]))
-                if coeff > 0.001:
-                    exchange.create_limit_sell_order(market, float(order[1]) * coeff, float(order[0]))
-                # exchange.sell(market, order[0]*coeff, order[1])
+            price = trade_args[i][0]
+            volume = trade_args[i][1]
+            try:
+                exchange.create_limit_sell_order(market, volume, price)
+            except:
+                time.sleep(0.05)
+                exchange.create_limit_sell_order(market, volume, price)
+
+def truncate(f, n):
+    return math.floor(f * 10 ** n) / 10 ** n
+            
+def set_trade_args(orders, coeffs, path, G, balance):
+    trade_args = []
+    previous_volume = balance
+    sell_counter = 0
+    fee = 1 - 0.001
+    for i in range(len(path) - 1):
+        x_curr = path[i]
+        x_next = path[i+1]
+        precision = float(G[x_curr][x_next]['p'])
+        max_price = 0
+        min_price = float('inf')
+        volume = 0
+        deal_type = ''
+        if G[x_curr][x_next]['d'] == 'direct':
+            deal_type = 'buy'
+        else:
+            deal_type = 'sell'
+        for order, coeff in zip(orders[i], coeffs[i]):
+            if (deal_type == 'buy'):
+                if order[0] > max_price and coeff > 0.001:
+                    max_price = order[0]
+            else:
+                if order[0] < min_price and coeff > 0.001:
+                    min_price = order[0]
+            if coeff > 0.001:
+                volume += order[1] * coeff
+        volume = truncate(volume, precision)
+        if deal_type == 'buy':
+            if max_price == 0:
+                return None
+            previous_volume = previous_volume / max_price
+            if volume > previous_volume:
+                volume = truncate(previous_volume, precision)
+            trade_args.append((max_price, volume))
+            sell_counter = 0
+        else:
+            if min_price == float('inf'):
+                return None
+            if sell_counter % 2 == 1:
+                previous_volume = fee * trade_args[i-1][0] * trade_args[i-1][1]
+            if volume > previous_volume:
+                volume = truncate(previous_volume, precision)
+            trade_args.append((min_price, volume))
+            sell_counter += 1
+        previous_volume = fee * volume
+
+    print(trade_args[len(path) - 2][0] * trade_args[len(path) - 2][1])
+    if (trade_args[len(path) - 2][0] * trade_args[len(path) - 2][1] > balance):
+        return trade_args
+    else:
+        return None
 
 def opt_parallel(args):
-    kraken = ccxt.kraken({
+    binance = ccxt.binance({
     'apiKey': '-',
-    'secret': '-',})
-    exch_dict = {'kraken':kraken}
+    'secret': '-', })
+    exch_dict = {'binance':binance}
     G = args[0]
     path = args[1]
     depth = args[2]
@@ -257,26 +312,28 @@ def opt_parallel(args):
     if (cycle != None):
         try:
             Volumes, Rates, Fees, Orders = pre_optimize(G, cycle, exch_dict, depth)
-            usd_balance = kraken.fetch_balance()['USD']['free']
-            Balances = [usdt_balance, 0, 0, 0, 0, 0, 0, 0]
+            usdt_balance = float(binance.fetch_balance()['USDT']['free'])
+            Balances = [usdt_balance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             prob = optimize(Volumes, Rates, Fees, Balances,'ECOS')
-            x = prob.variables()[0]
-            start_volume = x.value[0].sum()
-            profit_percents = 100 * prob.value / start_volume
-            Volumes[Volumes == 0] = 1.0
-            coeffs = x.value / Volumes
-            corrupted_indexes = np.isnan(coeffs) + np.abs(coeffs) == np.inf  # this is logical OR
-            coeffs[corrupted_indexes] = 0.0
-            trade_args = (Orders, coeffs)
-            return [prob.value, profit_percents, prob, trade_args, cycle, usd_balance]
         except:
             #print('Solver failed')
             return None
+        x = prob.variables()[0]
+        start_volume = x.value[0].sum()
+        profit_percents = 100 * prob.value / start_volume
+        Volumes[Volumes == 0] = 1.0
+        coeffs = x.value / Volumes
+        corrupted_indexes = np.isnan(coeffs) + np.abs(coeffs) == np.inf  # this is logical OR
+        coeffs[corrupted_indexes] = 0.0
+        trade_args = set_trade_args(Orders, coeffs, cycle, G, usdt_balance)
+        if trade_args == None:
+            return None
+        return [prob.value, profit_percents, prob, trade_args, cycle, usdt_balance]
     return None
 
 def cycle_handler(cycle):
-    if ('USD.kraken' in cycle):
-        start_currency = 'USD.kraken'
+    if ('USDT.binance' in cycle):
+        start_currency = 'USDT.binance'
     else:
         return None
     while(cycle[0] != start_currency):
@@ -285,20 +342,19 @@ def cycle_handler(cycle):
     return cycle
 
 def do_main(bot, job):
-    kraken = ccxt.kraken({
+    binance = ccxt.binance({
     'apiKey': '!',
-    'secret': '!',})
+    'secret': '!', })
     logger = logging.getLogger("TelegramApp.do_main")
     start_time = time.time()
-    exch_dict = {'kraken': kraken} #'huobi': huobi}
-    nodes, edges = fetch_exchange('kraken', kraken)
+    exch_dict = {'binance': binance} #'huobi': huobi}
+    nodes, edges = fetch_exchange('binance', binance)
     G = nx.DiGraph()
     G.add_nodes_from(nodes)
     G.add_edges_from(edges)
     depth = 10
-    start_with = 'BTC.kraken'
+    start_with = 'BTC.binance'
     paths = bellman_ford(G, start_with)
-    #time.sleep(0.5)
     args = [[G, path, depth] for path in paths]
     pool = multiprocessing.Pool(processes=6)
     report = {}
@@ -306,25 +362,30 @@ def do_main(bot, job):
         if res is None:
             continue
         else:
-            profit_value, profit_percents, prob, trade_args, cycle, usd_balance = res
-            if (100 * profit_value / profit_percents > 0.9 * usd_balance):
-                trade(cycle, trade_args[0], trade_args[1], G, exch_dict)
-                bot.send_message(chat_id=job.context['chat_id'], text='trade executed')
-                report[str(cycle)] = {'profit_percents': profit_percents, 'profit_value': profit_value, 'coeffs': trade_args[1], 'orders': trade_args[0]}
+            profit_value, profit_percents, prob, trade_args, cycle, usdt_balance = res
+            #bot.send_message(chat_id=job.context['chat_id'], text='cycle found')
+            #bot.send_message(chat_id=job.context['chat_id'], text=str(100 * profit_value / profit_percents))
+            if (100 * profit_value / profit_percents > 0.8 * usdt_balance):
+                try:
+                    trade(cycle, trade_args, G)
+                    bot.send_message(chat_id=job.context['chat_id'], text='trade succeeded')
+                except:
+                    bot.send_message(chat_id=job.context['chat_id'], text='trade failed')
+                report[str(cycle)] = {'balance': usdt_balance, 'profit_percents': profit_percents, 'profit_value': profit_value, 'orders, coeffs': trade_args}
                 #trade(cycle, trade_args[0], trade_args[1], G, exch_dict)
     end_time = time.time() - start_time
     if (len(report) > 0):
         for key in report.keys():
             time_info = 'processing time: ' + str(end_time) + '\n'
             cycle_info = key + '\n'
+            balance_info = 'balance: ' + str(report[key]['balance']) + '\n'
             percent_info = 'profit percents: ' + str(report[key]['profit_percents']) + '\n'
             dollar_info = 'profit dollars: ' + str(report[key]['profit_value']) + '\n'
-            orders_info = 'orders: ' + '\n' + str(report[key]['orders']) + '\n' + '\n'
-            coeffs_info = 'coeffs: ' + '\n' + str(report[key]['coeffs']) + '\n'
-            report_text = time_info + cycle_info + percent_info + dollar_info + orders_info + coeffs_info
+            orders_info = 'orders, coeffs: ' + '\n' + str(report[key]['orders, coeffs']) + '\n' + '\n'
+            report_text = time_info + balance_info + cycle_info + percent_info + dollar_info + orders_info
             bot.send_message(chat_id=job.context['chat_id'], text= report_text)
     pool.close()
-            
+
 if __name__ == '__main__':
     def state(bot, update):
         try:
@@ -332,6 +393,7 @@ if __name__ == '__main__':
             update.message.reply_text('Ищу заебал!')
         except:
             update.message.reply_text('Хуйня какая-то')
+
 
     def stop(bot, update, chat_data):
         logger = logging.getLogger("TelegramApp.stop")
@@ -355,34 +417,34 @@ if __name__ == '__main__':
 
     def hello(bot, update):
         update.message.reply_text('Hello {}'.format(update.message.from_user.first_name))
-
-
+    
     def balance(bot, update):
-        kraken = ccxt.kraken({
-            'apiKey': '-',
-            'secret': '-',})
-        usd = kraken.fetch_balance()['USD']['free']
-        print(usd)
-        update.message.reply_text(str(usd))
+        binance = ccxt.binance({
+        'apiKey': '-',
+        'secret': '-', })
+        balance_usdt = binance.fetch_balance()['USDT']['free']
+        update.message.reply_text(str(balance_usdt))
+
+
           
     def start(bot, update, job_queue, chat_data):
-        logger = logging.getLogger("TelegramApp.start")
-        try:
-            if 'job' in chat_data:
-                update.message.reply_text('Already started')
-                logger.info('Already started')
-                return
-            # job1 = job_queue.run_repeating(do_job, 1, context={'chat_id':update.message.chat_id, 'chat_data': chat_data})
-            # time.sleep(1)
-            job2 = job_queue.run_repeating(do_main, 3.0, context={'chat_id': update.message.chat_id,
-                                                                'chat_data': chat_data})
-            logger.info('Scheduled chat_id: {}'.format(update.message.chat_id))
+            logger = logging.getLogger("TelegramApp.start")
+            try:
+                if 'job' in chat_data:
+                    update.message.reply_text('Already started')
+                    logger.info('Already started')
+                    return
+                # job1 = job_queue.run_repeating(do_job, 1, context={'chat_id':update.message.chat_id, 'chat_data': chat_data})
+                # time.sleep(1)
+                job2 = job_queue.run_repeating(do_main, 10.0, context={'chat_id': update.message.chat_id,
+                                                                    'chat_data': chat_data})
+                logger.info('Scheduled chat_id: {}'.format(update.message.chat_id))
 
-            chat_data['job'] = [job2]
-            chat_data['values'] = []
-        except Exception as e:
-            # print(e)
-            logger.error(e)
+                chat_data['job'] = [job2]
+                chat_data['values'] = []
+            except Exception as e:
+                # print(e)
+                logger.error(e)
 
 
     with ThreadPool(processes=3) as pool:
