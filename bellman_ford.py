@@ -1,9 +1,7 @@
 import ccxt
 import math
 from datetime import datetime
-import networkx as nx
 import matplotlib.pyplot as plt
-import cvxpy as cvx
 import numpy as np
 import re
 import fetch
