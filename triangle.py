@@ -5,7 +5,7 @@ def findNegativeTriangles(graph):
 		for v in graph[u]:
 			if v not in visited:
 				for w in graph[v]:
-					if w not in visited and isNegative(graph, u, v, w):
+					if w not in visited and graph[w][u] in graph[w] and isNegative(graph, u, v, w):
 						result.append([u, v, w])
 		visited.add(u)
 
