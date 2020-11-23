@@ -1,8 +1,6 @@
-
 import ccxt
 import math
 from datetime import datetime
-import matplotlib.pyplot as plt
 import numpy as np
 import re
 
@@ -35,3 +33,4 @@ def fetch_exchange(exch_name, exch):
             except:
                 print('symbol error')
     return graph
+

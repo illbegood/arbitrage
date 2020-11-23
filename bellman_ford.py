@@ -1,10 +1,9 @@
 import ccxt
 import math
 from datetime import datetime
-import matplotlib.pyplot as plt
 import numpy as np
 import re
-import fetch
+from fetch import fetch_exchange
 
 
 # Step 1: For each node prepare the destination and predecessor
@@ -26,16 +25,16 @@ def relax(node, neighbour, graph, d, p):
         p[neighbour] = node
  
 def retrace_negative_loop(p, start):
-	arbitrageLoop = [start]
-	next_node = start
-	while True:
-		next_node = p[next_node]
-		if next_node not in arbitrageLoop:
-			arbitrageLoop.append(next_node)
-		else:
-			arbitrageLoop.append(next_node)
-			arbitrageLoop = arbitrageLoop[arbitrageLoop.index(next_node):]
-			return arbitrageLoop
+    arbitrageLoop = [start]
+    next_node = start
+    while True:
+        next_node = p[next_node]
+        if next_node not in arbitrageLoop:
+            arbitrageLoop.append(next_node)
+        else:
+            arbitrageLoop.append(next_node)
+            arbitrageLoop = arbitrageLoop[arbitrageLoop.index(next_node):]
+            return arbitrageLoop
 
 
 def bellman_ford(graph, source):
@@ -49,8 +48,8 @@ def bellman_ford(graph, source):
     # Step 3: check for negative-weight cycles
     for u in graph:
         for v in graph[u]:
-        	if d[v] < d[u] + graph[u][v]['weight']:
-        		return(retrace_negative_loop(p, source))
+            if d[v] < d[u] + graph[u][v]['weight']:
+                return(retrace_negative_loop(p, source))
     return None
 
 
@@ -62,10 +61,9 @@ def collect_negative_cycle():
     paths = []
     graph = fetch_exchange('binance', binance)
 
-    for key in graph:
-        path = bellman_ford(graph, key)
-        if path not in paths and not None:
-            paths.append(path)
+    path = bellman_ford(graph, 'USDT')
+    if path not in paths and not None:
+        paths.append(path)
 
     for path in paths:
         if path == None:
