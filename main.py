@@ -21,10 +21,11 @@ def collect_negative_cycle():
             print(path)
             graph_sum = 0
             for i in range(len(path) - 1):
-                print(graph[path[i]][path[i + 1]]['weight'])
+                print(math.exp(-graph[path[i]][path[i + 1]]['weight']))
                 graph_sum += graph[path[i]][path[i + 1]]['weight']
             print('total sum:')
             print(graph_sum)
+            print('profit')
             print(math.exp(-graph_sum))
 
 collect_negative_cycle()
