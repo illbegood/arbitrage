@@ -17,11 +17,10 @@ def initialize(graph, source):
     return d, p
  
 def relax(node, neighbour, graph, d, p):
-    fee = -math.log(1 - 0.001)
     # If the distance between the node and the neighbour is lower than the one I have now
-    if d[neighbour] > d[node] + graph[node][neighbour]['weight'] + fee:
+    if d[neighbour] > d[node] + graph[node][neighbour]['weight']:
         # Record this lower distance
-        d[neighbour]  = d[node] + graph[node][neighbour]['weight'] + fee
+        d[neighbour]  = d[node] + graph[node][neighbour]['weight']
         p[neighbour] = node
  
 def retrace_negative_loop(p, start):
@@ -33,8 +32,8 @@ def retrace_negative_loop(p, start):
             arbitrageLoop.append(next_node)
         else:
             arbitrageLoop.append(next_node)
-            arbitrageLoop = arbitrageLoop[arbitrageLoop.index(next_node):]
-            return arbitrageLoop
+            reversed_arbitrageLoop = arbitrageLoop[::-1]
+            return reversed_arbitrageLoop
 
 
 def bellman_ford(graph, source):
