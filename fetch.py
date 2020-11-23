@@ -16,7 +16,7 @@ def fetch_exchange(exch_name, exch):
                 node_to, node_from = symbol.split('/')
                 try:
                     w_to = -math.log(1 / float(exch_tickers[symbol]['info']['askPrice']))
-                    w_from = - math.log(float(exch_tickers[symbol]['info']['askPrice']))
+                    w_from = - math.log(float(exch_tickers[symbol]['info']['bidPrice']))
                     #precision = int(market[symbol]['precision']['amount'])
                     #fee = 1 - 0.001
                 except:
