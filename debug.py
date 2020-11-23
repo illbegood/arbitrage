@@ -3,16 +3,27 @@ import math
 
 def write_graph_csv(graph, filepath):
     with open(filepath, 'w', newline='') as file:
-        writer = csv.writer(file)
+        writer = csv.writer(file, delimiter=',')
         writer.writerow([''] + list(graph))
         key_to_idx = {value: key for key, value in enumerate(graph)}
         for u in graph:
             l = [''] * len(graph)
             for (key, value) in graph[u].items():
-                #print(type(key), type(value))
                 l[key_to_idx[key]] = value['weight']
             l[key_to_idx[u]] = 1
             writer.writerow([u] + l)
+
+def read_graph_scv(filepath):
+    with open(filepath, newline='') as file:
+        reader = csv.reader(file, delimiter=',')
+        graph = {i: {} for i in reader.__next__()[1:]}
+        for row in reader:
+            w = row[0]
+            for u, v in zip(graph, row[1:]):
+                if v != None and w != u:
+                    graph[w][u] = {'weight': v, 'd': 'direct'}
+    return graph
+    
 
 from tabulate import tabulate
 

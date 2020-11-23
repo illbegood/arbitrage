@@ -15,7 +15,9 @@ def collect_negative_cycle():
     if path not in paths and not None:
         paths.append(path)
     #debug.print_results(graph, paths)
-    debug.write_graph_csv(graph, "out.csv")
+    #debug.write_graph_csv(graph, "test.csv")
+    #debug.read_graph_scv("test.csv")
+    debug.write_graph_csv(debug.read_graph_scv("in.csv"), "out.csv")
        
 
 collect_negative_cycle()
