@@ -52,22 +52,10 @@ def bellman_ford(graph, source):
             if d[v] < d[u] + graph[u][v]['weight']:
                 return(retrace_negative_loop(p, source))
     return None
-
-
-def collect_negative_cycle():
-    binance = ccxt.binance({
-    'apiKey': '!',
-    'secret': '!', })
-    
+            
+def collect_negative_cycle(graph):
     paths = []
-    graph = fetch_exchange('binance', binance)
-
     path = bellman_ford(graph, 'USDT')
     if path not in paths and not None:
         paths.append(path)
-
-    for path in paths:
-        if path == None:
-            print("No opportunity here :(")
-        else:
-            print(path)
+    return paths

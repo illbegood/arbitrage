@@ -4,6 +4,12 @@ from datetime import datetime
 import numpy as np
 import re
 
+def binance_graph():
+    binance = ccxt.binance({
+    'apiKey': 'y',
+    'secret': 'Y', })
+    return fetch_exchange('binance', binance)
+
 def fetch_exchange(exch_name, exch):
     graph = {}
     # load markets

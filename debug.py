@@ -45,11 +45,12 @@ def print_results(graph, paths):
             print(graph_sum)
             print('profit')
             print(math.exp(-graph_sum))
-            #write_graph_csv(graph, "out.csv")
-            #print(len(graph))
             
-from main import collect_negative_cycle
-graph = read_graph_scv("out.csv")
+from bellman_ford import collect_negative_cycle
+from fetch import binance_graph
+
+graph = binance_graph()
+#graph = read_graph_scv("out.csv")
 paths = collect_negative_cycle(graph)
 print_results(graph, paths)
 
