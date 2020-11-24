@@ -55,6 +55,8 @@ def get_volume_and_orderbooks(graph, cycle, balance):
     
 def process_cycle(graph, cycle, exch, balance, precision):
     trade_balance, all_orderbooks = get_volume_and_orderbooks(graph, cycle, balance)
+    fee = 0.001
+    next_cur_balance = 0
     for i in range(len(cycle)):
         if i != len(cycle) - 1:
             x_cur = cycle[i]
@@ -73,12 +75,14 @@ def process_cycle(graph, cycle, exch, balance, precision):
                     order_volume = truncate(trade_balance / price, precision)
                     #exchange.create_limit_buy_order(market, order_volume, price)
                     print('BUY:', order_volume, price)
-                    trade_balance -= order_volume * price
+                    trade_balance -= order_volume * price * (1 + fee)
+                    next_cur_balance += order_volume * (1 - fee)
                 else:
                     order_volume = truncate(converted_volume / price, precision)
                     #exchange.create_limit_buy_order(market, order_volume, price)
                     print('BUY:', order_volume, price)
-                    trade_balance -= order_volume * price
+                    trade_balance -= order_volume * price * (1 + fee)
+                    next_cur_balance += order_volume * (1 - fee)
                     order_idx += 1
         else:
             symb = x_cur + '/' + x_next
@@ -91,10 +95,14 @@ def process_cycle(graph, cycle, exch, balance, precision):
                     order_volume = truncate(trade_balance, precision)
                     #exchange.create_limit_buy_order(market, order_volume, price)
                     print('SELL:', order_volume, price)
-                    trade_balance -= order_volume
+                    trade_balance -= order_volume * (1 + fee)
+                    next_cur_balance += order_volume * price * (1 - fee)
                 else:
                     order_volume = truncate(volume, precision)
                     #exchange.create_limit_buy_order(market, order_volume, price)
                     print('SELL:', order_volume, price)
-                    trade_balance -= order_volume
+                    trade_balance -= order_volume * (1 + fee)
+                    next_cur_balance += order_volume * price * (1 - fee)
                     order_idx += 1
+        trade_balance = next_cur_balance
+        
