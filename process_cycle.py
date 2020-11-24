@@ -7,13 +7,9 @@ def truncate(f, n):
 
 def get_volume_and_orderbooks(graph, cycle, balance):
     max_volume = balance
-    for i in range(len(cycle)):
-        if i != len(cycle) - 1:
-            x_cur = cycle[i]
-            x_next = cycle[i + 1]
-        else:
-            x_cur = cycle[i]
-            x_next = cycle[0]
+    for i in range(len(cycle) - 1):
+        x_cur = cycle[i]
+        x_next = cycle[i + 1]
         all_orderbooks = []
         if graph[x_curr][x_next]['d'] == 'direct':
             symb = x_next + '/' + x_cur
@@ -57,13 +53,9 @@ def process_cycle(graph, cycle, exch, balance, precision):
     trade_balance, all_orderbooks = get_volume_and_orderbooks(graph, cycle, balance)
     fee = 0.001
     next_cur_balance = 0
-    for i in range(len(cycle)):
-        if i != len(cycle) - 1:
-            x_cur = cycle[i]
-            x_next = cycle[i + 1]
-        else:
-            x_cur = cycle[i]
-            x_next = cycle[0]
+    for i in range(len(cycle) - 1):
+        x_cur = cycle[i]
+        x_next = cycle[i + 1]
         if graph[x_curr][x_next]['d'] == 'direct':
             symb = x_next + '/' + x_cur
             orderbook = all_orderbooks[i]
