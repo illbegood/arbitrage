@@ -1,3 +1,5 @@
 __pycache__/*
 *.csv
 *.txt
+.DS_STORE
+*.ipynb
