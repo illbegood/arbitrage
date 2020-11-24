@@ -20,8 +20,8 @@ def read_graph_scv(filepath):
         for row in reader:
             w = row[0]
             for u, v in zip(graph, row[1:]):
-                if v != None and w != u:
-                    graph[w][u] = {'weight': v, 'd': 'direct'}
+                if v != '' and w != u:
+                    graph[w][u] = {'weight': float(v), 'd': 'direct'}
     return graph
     
 
@@ -45,5 +45,5 @@ def print_results(graph, paths):
             print(graph_sum)
             print('profit')
             print(math.exp(-graph_sum))
-            write_graph_csv(graph, "out.csv")
+            #write_graph_csv(graph, "out.csv")
             #print(len(graph))

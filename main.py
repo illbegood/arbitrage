@@ -1,8 +1,7 @@
 import ccxt
-
 from fetch import fetch_exchange
 from bellman_ford import bellman_ford
-import debug
+from debug import write_graph_csv, read_graph_scv, print_results
 
 def collect_negative_cycle():
     binance = ccxt.binance({
@@ -10,14 +9,15 @@ def collect_negative_cycle():
     'secret': 'Y', })
     
     paths = []
-    graph = fetch_exchange('binance', binance)
+    #graph = fetch_exchange('binance', binance)
+    graph = read_graph_scv("out.csv")
     path = bellman_ford(graph, 'USDT')
     if path not in paths and not None:
         paths.append(path)
-    #debug.print_results(graph, paths)
-    #debug.write_graph_csv(graph, "test.csv")
-    #debug.read_graph_scv("test.csv")
-    debug.write_graph_csv(debug.read_graph_scv("in.csv"), "out.csv")
+    #print_results(graph, paths)
+    print_results(graph, paths)
+    #read_graph_scv("test.csv")
+    #write_graph_csv(read_graph_scv("in.csv"), "out.csv")
        
 
 collect_negative_cycle()
