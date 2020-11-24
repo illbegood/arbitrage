@@ -24,7 +24,7 @@ def relax(node, neighbour, graph, d, p):
         p[neighbour] = node
  
 def retrace_negative_loop(p, start):
-    arbitrageLoop = []
+    arbitrageLoop = [start]
     next_node = start
     while True:
         next_node = p[next_node]
