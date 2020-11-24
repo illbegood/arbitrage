@@ -47,3 +47,10 @@ def print_results(graph, paths):
             print(math.exp(-graph_sum))
             #write_graph_csv(graph, "out.csv")
             #print(len(graph))
+            
+from main import collect_negative_cycle
+graph = read_graph_scv("out.csv")
+paths = collect_negative_cycle(graph)
+print_results(graph, paths)
+
+
