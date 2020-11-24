@@ -31,9 +31,11 @@ def retrace_negative_loop(p, start):
         if next_node not in arbitrageLoop:
             arbitrageLoop.append(next_node)
         else:
-            arbitrageLoop.append(next_node)
-            reversed_arbitrageLoop = arbitrageLoop[::-1]
-            return reversed_arbitrageLoop
+            if next_node == start:
+                arbitrageLoop.append(next_node)
+                reversed_arbitrageLoop = arbitrageLoop[::-1]
+                return reversed_arbitrageLoop
+            return None
 
 
 def bellman_ford(graph, source):
