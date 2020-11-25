@@ -1,5 +1,7 @@
 import csv
 import math
+import ccxt
+from process_cycle import process_cycle
 
 def write_graph_csv(graph, filepath):
     with open(filepath, 'w', newline='') as file:
@@ -27,31 +29,39 @@ def read_graph_scv(filepath):
 
 from tabulate import tabulate
 
-def print_results(graph, paths):
-    for path in paths:
-        if path == None:
-            print("No opportunity here :(")
-        else:
-            print(path)
-            graph_sum = 0
-            table = []
-            for i in range(len(path) - 1):
-                weight = graph[path[i]][path[i + 1]]['weight']
-                w_e = math.exp(-weight)
-                table.append([w_e, 1/w_e, weight])
-                graph_sum += weight
-            print(tabulate(table, headers=["CUR1_CUR2", "CUR2_CUR1", "LN(CUR1_CUR2)"]))
-            print('total sum:')
-            print(graph_sum)
-            print('profit')
-            print(math.exp(-graph_sum))
+def print_results(graph, path):
+    #for path in paths:
+    if path == None:
+        print("No opportunity here :(")
+    else:
+        print(path)
+        graph_sum = 0
+        table = []
+        for i in range(len(path) - 1):
+            weight = graph[path[i]][path[i + 1]]['weight']
+            w_e = math.exp(-weight)
+            table.append([w_e, 1/w_e, weight])
+            graph_sum += weight
+        print(tabulate(table, headers=["CUR1_CUR2", "CUR2_CUR1", "LN(CUR1_CUR2)"]))
+        print('total sum:')
+        print(graph_sum)
+        print('profit')
+        print(math.exp(-graph_sum))
             
 from bellman_ford import collect_negative_cycle
 from fetch import binance_graph
 
 graph = binance_graph()
 #graph = read_graph_scv("out.csv")
-paths = collect_negative_cycle(graph)
-print_results(graph, paths)
+path = collect_negative_cycle(graph)
+print_results(graph, path)
+if path != None:
+    binance = ccxt.binance({
+        'apiKey': 'y',
+        'secret': 'Y', })
+    balance = 100
+    orderbook_depth = 5
+    precision = 6
+    process_cycle(graph, path, binance, balance, orderbook_depth, precision)
 
 
