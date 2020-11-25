@@ -51,6 +51,8 @@ def process_cycle(graph, cycle, exch, balance, orderbook_depth, precision):
     trade_balance, all_orderbooks = get_volume_and_orderbooks(graph, cycle, balance, exch, orderbook_depth)
     fee = 0.001
     next_cur_balance = 0
+    print('Total balance:', balance)
+    print('Trade balance:', trade_balance)
     for i in range(len(cycle) - 1):
         x_cur = cycle[i]
         x_next = cycle[i + 1]
@@ -95,4 +97,5 @@ def process_cycle(graph, cycle, exch, balance, orderbook_depth, precision):
                     next_cur_balance += order_volume * price * (1 - fee)
                     order_idx += 1
         trade_balance = next_cur_balance
+    print('End balance:', trade_balance)
         
