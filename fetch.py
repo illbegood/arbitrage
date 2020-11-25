@@ -50,10 +50,10 @@ def prefetch(exch):
     if (exch.has['fetchTickers']):
         exch_tickers = exch.fetch_tickers()
         for symbol, data in exch_tickers.items():
-            #try:
-            add_edges(symbol, data, monograph, digraph)
-            #except:
-                #print('symbol error')
+            try:
+                add_edges(symbol, data, monograph, digraph)
+            except:
+                print('symbol error')
     return monograph, digraph
     
 
