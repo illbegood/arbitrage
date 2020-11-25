@@ -5,7 +5,7 @@ import math
 def truncate(f, n):
     return math.floor(f * 10 ** n) / 10 ** n
 
-def get_volume_and_orderbooks(graph, cycle, balance):
+def get_volume_and_orderbooks(graph, cycle, balance, depth):
     max_volume = balance
     for i in range(len(cycle) - 1):
         x_cur = cycle[i]
@@ -47,8 +47,8 @@ def get_volume_and_orderbooks(graph, cycle, balance):
                 max_volume = volume_in_next_currency
         return max_volume, all_orderbooks
     
-def process_cycle(graph, cycle, exch, balance, precision):
-    trade_balance, all_orderbooks = get_volume_and_orderbooks(graph, cycle, balance)
+def process_cycle(graph, cycle, exch, balance, orderbook_depth, precision):
+    trade_balance, all_orderbooks = get_volume_and_orderbooks(graph, cycle, balance, orderbook_depth)
     fee = 0.001
     next_cur_balance = 0
     for i in range(len(cycle) - 1):
