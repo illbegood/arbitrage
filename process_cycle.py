@@ -22,8 +22,7 @@ def get_volume_and_orderbooks(graph, cycle, balance):
                 volume = order[1]
                 if volume_in_current_currency + volume * price > max_volume:
                     max_volume = (max_volume - cur_symbol_volume) / price + volume_in_next_currency
-                    volume_in_current_currency += volume * price
-                    volume_in_next_currency += volume
+                    volume_in_current_currency = float('inf')
                     break
                 volume_in_current_currency += volume * price
                 volume_in_next_currency += volume
@@ -38,10 +37,9 @@ def get_volume_and_orderbooks(graph, cycle, balance):
             for order in orderbook:
                 price = order[0]
                 volume = order[1]
-                if cur_symbol_volume + volume > max_volume:
+                if volume_in_current_currency + volume > max_volume:
                     max_volume = (max_volume - cur_symbol_volume) * price + volume_in_next_currency
-                    volume_in_current_currency += volume
-                    volume_in_next_currency += volume * price
+                    volume_in_current_currency = float('inf')
                     break
                 volume_in_current_currency += volume
                 volume_in_next_currency += volume * price
