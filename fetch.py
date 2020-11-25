@@ -4,39 +4,66 @@ from datetime import datetime
 import numpy as np
 import re
 
-def binance_graph():
+def init():
     binance = ccxt.binance({
     'apiKey': 'y',
     'secret': 'Y', })
-    return fetch_exchange('binance', binance)
+    return prefetch(binance)
 
-def fetch_exchange(exch_name, exch):
-    graph = {}
-    # load markets
-    market = exch.load_markets(True)
+def get_directions_and_weights(symbol, data):
+    node_to, node_from = symbol.split('/')
+    try:
+        w_to = -math.log(1 / float(data['info']['askPrice']))
+        w_from = -math.log(float(data['info']['bidPrice']))
+    except:
+        w_to = float('inf')
+        w_from = float('inf')
+    return node_to, node_from, w_to, w_from
 
+def update_monograph(monograph, node_from, node_to):
+    if node_from not in monograph:
+        monograph[node_from] = []
+        monograph[node_from].append(node_to)
+        
+def update_digraph(digraph, node_from, node_to, w_from, w_to, lazy = True):
+    if not lazy:
+        if node_from not in digraph:
+            digraph[node_from] = {}
+        if node_to not in digraph:
+            digraph[node_to] = {}
+    digraph[node_from][node_to] = w_to
+    digraph[node_to][node_from] = w_from
+
+def add_edges(symbol, data, monograph, digraph):
+    node_to, node_from, w_to, w_from = get_directions_and_weights(symbol, data)
+    update_monograph(monograph, node_from, node_to)
+    update_digraph(digraph, node_from, node_to, w_from, w_to, False)
+
+def update_edges(symbol, data, digraph):
+    node_to, node_from, w_to, w_from = get_directions_and_weights(symbol, data)
+    update_digraph(digraph, node_from, node_to, w_from, w_to)    
+
+def prefetch(exch):
+    fee = 0.001
+    monograph = {}
+    digraph = {}
     if (exch.has['fetchTickers']):
         exch_tickers = exch.fetch_tickers()
-        for symbol in exch_tickers.keys():
+        for symbol, data in exch_tickers.items():
+            #try:
+            add_edges(symbol, data, monograph, digraph)
+            #except:
+                #print('symbol error')
+    return monograph, digraph
+    
+
+def fetch(exch, digraph):
+    fee = 0.001
+    if (exch.has['fetchTickers']):
+        exch_tickers = exch.fetch_tickers()
+        for symbol, data in exch_tickers.items():
             try:
-                node_to, node_from = symbol.split('/')
-                try:
-                    w_to = -math.log(1 / float(exch_tickers[symbol]['info']['askPrice']))
-                    w_from = - math.log(float(exch_tickers[symbol]['info']['bidPrice']))
-                    #precision = int(market[symbol]['precision']['amount'])
-                    #fee = 1 - 0.001
-                except:
-                    w_to = float('inf')
-                    w_from = float('inf')
-                    precision = 1
-                    fee = 0
-                if node_from not in graph:
-                    graph[node_from] = {}
-                graph[node_from][node_to] = {'weight': w_to, 'd': 'direct'}
-                if node_to not in graph:
-                    graph[node_to] = {}
-                graph[node_to][node_from] = {'weight': w_from, 'd': 'reverse'}
+                update_edges(symbol, data, digraph)
             except:
                 print('symbol error')
-    return graph
 

@@ -3,3 +3,5 @@ __pycache__/*
 *.txt
 .DS_STORE
 *.ipynb
+
+optimize.py

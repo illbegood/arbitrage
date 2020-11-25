@@ -38,23 +38,24 @@ def print_results(graph, path):
         graph_sum = 0
         table = []
         for i in range(len(path) - 1):
-            weight = graph[path[i]][path[i + 1]]['weight']
+            weight = graph[path[i]][path[i + 1]]
             w_e = math.exp(-weight)
             table.append([w_e, 1/w_e, weight])
             graph_sum += weight
-        print(tabulate(table, headers=["CUR1_CUR2", "CUR2_CUR1", "LN(CUR1_CUR2)"]))
+        print(tabulate(table, headers=["CUR1_CUR2", "CUR2_CUR1", "LN(CUR1->CUR2)"]))
         print('total sum:')
         print(graph_sum)
         print('profit')
         print(math.exp(-graph_sum))
             
 from bellman_ford import collect_negative_cycle
-from fetch import binance_graph
+from fetch import init
 
-graph = binance_graph()
-#graph = read_graph_scv("out.csv")
+monograph, graph = init()
+#graph = read_graph_scv("in.csv")
 path = collect_negative_cycle(graph)
 print_results(graph, path)
+quit()
 if path != None:
     binance = ccxt.binance({
         'apiKey': 'y',
