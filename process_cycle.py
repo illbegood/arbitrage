@@ -1,7 +1,6 @@
 import ccxt
 import numpy as np
 import math
-from optimize import get_trade_args
 
 def truncate(f, n):
     return math.floor(f * 10 ** n) / 10 ** n
@@ -103,4 +102,3 @@ def process_cycle(graph, cycle, exch, balance, orderbook_depth, precision):
                     order_idx += 1
         trade_balance = next_cur_balance
     print('End balance:', trade_balance)
-    get_trade_args(graph, cycle, exch, orderbook_depth, all_orderbooks)

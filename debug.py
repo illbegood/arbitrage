@@ -1,6 +1,7 @@
 import csv
 import math
 import ccxt
+import time
 from process_cycle import process_cycle
 
 def write_graph_csv(graph, filepath):
@@ -51,23 +52,30 @@ def print_results(graph, path):
 from bellman_ford import collect_negative_cycle
 from fetch import init
 
+def search_for_cycles(time_interval, graph):
+    binance = ccxt.binance({
+        'apiKey': 'p',
+        'secret': 'P', })
+    start_time = time.time()
+    paths = []
+    while(time_now - start_time <= time_interval):
+        path = collect_negative_cycle(graph)
+        if path not in paths and path != None:
+            print_results(graph, path)
+            paths.append(path)
+        time.sleep(binance.rateLimit / 1000)
+        time_now = time.time()
+    print('total number of cycles detected:', len(paths))
+
+    
 monograph, graph = init()
+time_interval = 3600
+search_for_cycles(time_interval, graph)
+
 #graph = read_graph_scv("in.csv")
-paths = []
-path = collect_negative_cycle(graph)
-print_results(graph, path)
-binance = ccxt.binance({
-    'apiKey': 'p',
-    'secret': 'P', })
-start_time = time.time()
-while(time_now - start_time <= 3600):
-    path = collect_negative_cycle(graph)
-    if path not in paths and path != None:
-        print_results(graph, path)
-        paths.append(path)
-    time.sleep(binance.rateLimit / 1000)
-    time_now = time.time()
-print(len(paths))
+#path = collect_negative_cycle(graph)
+#print_results(graph, path)
+
 '''
 if path != None:
     binance = ccxt.binance({
