@@ -53,6 +53,9 @@ from bellman_ford import collect_negative_cycle
 from fetch import init, fetch
 
 def search_for_cycles(time_interval, graph):
+    binance = ccxt.binance({
+        'apiKey': 'q',
+        'secret': 'Q', })
     start_time = time.time()
     time_now = time.time()
     paths = []
