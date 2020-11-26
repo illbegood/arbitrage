@@ -50,15 +50,17 @@ def print_results(graph, path):
         print(math.exp(-graph_sum))
             
 from bellman_ford import collect_negative_cycle
-from fetch import init
+from fetch import init, fetch
 
 def search_for_cycles(time_interval, graph):
     binance = ccxt.binance({
         'apiKey': 'p',
         'secret': 'P', })
     start_time = time.time()
+    time_now = time.time()
     paths = []
     while(time_now - start_time <= time_interval):
+        fetch(binance, graph)
         path = collect_negative_cycle(graph)
         if path not in paths and path != None:
             print_results(graph, path)
