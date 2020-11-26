@@ -47,8 +47,9 @@ def update_edges(symbol, data, digraph):
 def prefetch(exch):
     monograph = {}
     digraph = {}
+    exch.load_markets()
     if (exch.has['fetchTickers']):
-        exch_tickers = exch.fetch_tickers()
+        exch_tickers = exch.fetch_bids_asks()
         for symbol, data in exch_tickers.items():
             try:
                 add_edges(symbol, data, monograph, digraph)
@@ -58,8 +59,9 @@ def prefetch(exch):
     
 
 def fetch(exch, digraph):
+    exch.load_markets()
     if (exch.has['fetchTickers']):
-        exch_tickers = exch.fetch_tickers()
+        exch_tickers = exch.fetch_bids_asks()
         for symbol, data in exch_tickers.items():
             try:
                 update_edges(symbol, data, digraph)

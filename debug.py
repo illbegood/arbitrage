@@ -54,8 +54,8 @@ from fetch import init, fetch
 
 def search_for_cycles(time_interval, graph):
     binance = ccxt.binance({
-        'apiKey': 'q',
-        'secret': 'Q', })
+        'apiKey': 'l',
+        'secret': 'L', })
     start_time = time.time()
     time_now = time.time()
     paths = []
@@ -65,7 +65,7 @@ def search_for_cycles(time_interval, graph):
         if path not in paths and path != None:
             print_results(graph, path)
             paths.append(path)
-        time.sleep(0.3)
+        time.sleep(1)
         time_now = time.time()
     print('total number of cycles detected:', len(paths))
 
