@@ -52,7 +52,7 @@ def print_results(graph, path):
 from bellman_ford import collect_negative_cycle
 from fetch import init, fetch
 
-def search_for_cycles(time_interval, graph):
+def search_for_cycles(time_interval, graph, monograph):
     binance = ccxt.binance({
         'apiKey': 'l',
         'secret': 'L', })
@@ -65,6 +65,11 @@ def search_for_cycles(time_interval, graph):
         if path not in paths and path != None:
             print_results(graph, path)
             paths.append(path)
+            balance = 100
+            orderbook_depth = 10
+            precision = 8
+            process_cycle(graph, monograph, path, binance, balance, orderbook_depth, precision)
+            break
         time.sleep(1)
         time_now = time.time()
     print('total number of cycles detected:', len(paths))
@@ -72,7 +77,7 @@ def search_for_cycles(time_interval, graph):
     
 monograph, graph = init()
 time_interval = 3600
-search_for_cycles(time_interval, graph)
+search_for_cycles(time_interval, graph, monograph)
 
 #graph = read_graph_scv("in.csv")
 #path = collect_negative_cycle(graph)
