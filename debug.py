@@ -53,16 +53,29 @@ from fetch import init
 
 monograph, graph = init()
 #graph = read_graph_scv("in.csv")
+paths = []
 path = collect_negative_cycle(graph)
 print_results(graph, path)
-quit()
+binance = ccxt.binance({
+    'apiKey': 'p',
+    'secret': 'P', })
+start_time = time.time()
+while(time_now - start_time <= 3600):
+    path = collect_negative_cycle(graph)
+    if path not in paths and path != None:
+        print_results(graph, path)
+        paths.append(path)
+    time.sleep(binance.rateLimit / 1000)
+    time_now = time.time()
+print(len(paths))
+'''
 if path != None:
     binance = ccxt.binance({
         'apiKey': 'y',
         'secret': 'Y', })
     balance = 100
-    orderbook_depth = 5
-    precision = 6
+    orderbook_depth = 10
+    precision = 8
     process_cycle(graph, path, binance, balance, orderbook_depth, precision)
-
+'''
 

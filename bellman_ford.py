@@ -15,11 +15,10 @@ def initialize(graph, source):
     return d, p
  
 def relax(node, neighbour, graph, d, p):
-    fee = 0#-math.log(1 - 0.001)
     # If the distance between the node and the neighbour is lower than the one I have now
-    if d[neighbour] > d[node] + graph[node][neighbour] + fee:
+    if d[neighbour] > d[node] + graph[node][neighbour]:
         # Record this lower distance
-        d[neighbour] = d[node] + graph[node][neighbour] + fee
+        d[neighbour] = d[node] + graph[node][neighbour]
         p[neighbour] = node
  
 def retrace_negative_loop(p, start):
@@ -41,7 +40,6 @@ def retrace_negative_loop(p, start):
 
 
 def bellman_ford(graph, source):
-    fee = 0#-math.log(1 - 0.001)
     d, p = initialize(graph, source)
     for i in range(len(graph)-1): #Run this until is converges
         for u in graph:
@@ -52,7 +50,7 @@ def bellman_ford(graph, source):
     # Step 3: check for negative-weight cycles
     for u in graph:
         for v in graph[u]:
-            if d[v] < d[u] + graph[u][v] + fee:
+            if d[v] < d[u] + graph[u][v]:
                 return(retrace_negative_loop(p, source))
     return None
             
