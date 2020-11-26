@@ -53,9 +53,6 @@ from bellman_ford import collect_negative_cycle
 from fetch import init, fetch
 
 def search_for_cycles(time_interval, graph):
-    binance = ccxt.binance({
-        'apiKey': 'p',
-        'secret': 'P', })
     start_time = time.time()
     time_now = time.time()
     paths = []
@@ -65,7 +62,7 @@ def search_for_cycles(time_interval, graph):
         if path not in paths and path != None:
             print_results(graph, path)
             paths.append(path)
-        time.sleep(binance.rateLimit / 1000)
+        time.sleep(0.3)
         time_now = time.time()
     print('total number of cycles detected:', len(paths))
 
