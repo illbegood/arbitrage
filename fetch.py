@@ -11,10 +11,11 @@ def init():
     return prefetch(binance)
 
 def get_directions_and_weights(symbol, data):
+    fee = fee = -math.log(1 - 0.001)
     node_to, node_from = symbol.split('/')
     try:
-        w_to = -math.log(1 / float(data['info']['askPrice']))
-        w_from = -math.log(float(data['info']['bidPrice']))
+        w_to = -math.log(1 / float(data['info']['askPrice'])) + fee
+        w_from = -math.log(float(data['info']['bidPrice'])) + fee
     except:
         w_to = float('inf')
         w_from = float('inf')
@@ -44,11 +45,11 @@ def update_edges(symbol, data, digraph):
     update_digraph(digraph, node_from, node_to, w_from, w_to)    
 
 def prefetch(exch):
-    fee = 0.001
     monograph = {}
     digraph = {}
+    exch.load_markets()
     if (exch.has['fetchTickers']):
-        exch_tickers = exch.fetch_tickers()
+        exch_tickers = exch.fetch_bids_asks()
         for symbol, data in exch_tickers.items():
             try:
                 add_edges(symbol, data, monograph, digraph)
@@ -58,9 +59,9 @@ def prefetch(exch):
     
 
 def fetch(exch, digraph):
-    fee = 0.001
+    exch.load_markets()
     if (exch.has['fetchTickers']):
-        exch_tickers = exch.fetch_tickers()
+        exch_tickers = exch.fetch_bids_asks()
         for symbol, data in exch_tickers.items():
             try:
                 update_edges(symbol, data, digraph)
