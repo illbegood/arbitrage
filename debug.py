@@ -2,6 +2,8 @@ import csv
 import math
 import ccxt
 import time
+import threading
+import multiprocessing
 from process_cycle import process_cycle
 
 def write_graph_csv(graph, filepath):
@@ -12,7 +14,7 @@ def write_graph_csv(graph, filepath):
         for u in graph:
             l = [''] * len(graph)
             for (key, value) in graph[u].items():
-                l[key_to_idx[key]] = value['weight']
+                l[key_to_idx[key]] = value
             l[key_to_idx[u]] = 1
             writer.writerow([u] + l)
 
@@ -24,7 +26,7 @@ def read_graph_scv(filepath):
             w = row[0]
             for u, v in zip(graph, row[1:]):
                 if v != '' and w != u:
-                    graph[w][u] = {'weight': float(v), 'd': 'direct'}
+                    graph[w][u] = float(v)
     return graph
     
 
@@ -50,16 +52,31 @@ def print_results(graph, path):
         print(math.exp(-graph_sum))
             
 from bellman_ford import collect_negative_cycle
-from fetch import init, fetch
+from fetch import binance, init, fetch
 
-def search_for_cycles(time_interval, graph, monograph):
+def run_process(func, args):
+    func(args)
+
+def run_timed(func, args, time):
+    p = multiprocessing.Process(target=run_process, args=(func, args))
+    p.start()
+    p.join(time)
+    if (p.is_alive()):
+        p.terminate()
+        p.join()
+
+def _test(n):
+    a = 1
+    for i in range(n):
+        a += math.tan(i)
+    return a
+
+def search_for_cycles(graph, monograph):
     binance = ccxt.binance({
         'apiKey': 'l',
         'secret': 'L', })
-    start_time = time.time()
-    time_now = time.time()
     paths = []
-    while(time_now - start_time <= time_interval):
+    while(True):
         fetch(binance, graph)
         path = collect_negative_cycle(graph)
         if path not in paths and path != None:
@@ -70,19 +87,23 @@ def search_for_cycles(time_interval, graph, monograph):
             precision = 8
             process_cycle(graph, monograph, path, binance, balance, orderbook_depth, precision)
             break
-        time.sleep(1)
-        time_now = time.time()
     print('total number of cycles detected:', len(paths))
 
-    
-monograph, graph = init()
-time_interval = 3600
-search_for_cycles(time_interval, graph, monograph)
+
+from time import sleep
+
+start = time.time()
+#exch = binance()    
+#monograph, graph = init(exch)
+#run_timed(search_for_cycles, (graph, monograph), 3600)
+#search_for_cycles(graph, monograph)
+run_timed(_test, (20000000), 1)
 
 #graph = read_graph_scv("in.csv")
 #path = collect_negative_cycle(graph)
 #print_results(graph, path)
-
+end = time.time()
+print(end - start)
 '''
 if path != None:
     binance = ccxt.binance({
@@ -93,4 +114,3 @@ if path != None:
     precision = 8
     process_cycle(graph, path, binance, balance, orderbook_depth, precision)
 '''
-

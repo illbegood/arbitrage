@@ -4,11 +4,13 @@ from datetime import datetime
 import numpy as np
 import re
 
-def init():
-    binance = ccxt.binance({
+def binance():
+    return ccxt.binance({
     'apiKey': 'y',
     'secret': 'Y', })
-    return prefetch(binance)
+
+def init(exch):
+    return prefetch(exch)
 
 def get_directions_and_weights(symbol, data):
     fee = fee = -math.log(1 - 0.001)
