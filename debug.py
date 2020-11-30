@@ -53,11 +53,8 @@ def print_results(graph, path):
         print('profit')
         print(math.exp(-graph_sum))
 
-def run_process(func, args):
-    func(args)
-
 def run_timed(func, args, time):
-    p = multiprocessing.Process(target=run_process, args=(func, args))
+    p = multiprocessing.Process(target=func, args=args)
     p.start()
     p.join(time)
     if (p.is_alive()):
@@ -87,11 +84,13 @@ def search_for_cycles(exch, graph, monograph):
 
 
 start = time.time()
+'''
 logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
 exch = binance()    
 monograph, graph = init(exch)
 run_timed(search_for_cycles, (exch, graph, monograph), 3600)
-#run_timed(_test, (20000000), 1)
+'''
+run_timed(_test, (10000000,), 4)
 #graph = read_graph_scv("in.csv")
 #path = collect_negative_cycle(graph)
 #print_results(graph, path)
