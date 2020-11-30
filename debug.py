@@ -4,7 +4,12 @@ import ccxt
 import time
 import threading
 import multiprocessing
+import logging
+import tabulate
 from process_cycle import process_cycle
+from bellman_ford import collect_negative_cycle
+import logger
+from fetch import binance, init, fetch
 
 def write_graph_csv(graph, filepath):
     with open(filepath, 'w', newline='') as file:
@@ -30,8 +35,6 @@ def read_graph_scv(filepath):
     return graph
     
 
-from tabulate import tabulate
-
 def print_results(graph, path):
     #for path in paths:
     if path == None:
@@ -45,20 +48,14 @@ def print_results(graph, path):
             w_e = math.exp(-weight)
             table.append([w_e, 1/w_e, weight])
             graph_sum += weight
-        print(tabulate(table, headers=["CUR1_CUR2", "CUR2_CUR1", "LN(CUR1->CUR2)"]))
+        print(tabulate.tabulate(table, headers=["CUR1_CUR2", "CUR2_CUR1", "LN(CUR1->CUR2)"]))
         print('total sum:')
         print(graph_sum)
         print('profit')
         print(math.exp(-graph_sum))
-            
-from bellman_ford import collect_negative_cycle
-from fetch import binance, init, fetch
-
-def run_process(func, args):
-    func(args)
 
 def run_timed(func, args, time):
-    p = multiprocessing.Process(target=run_process, args=(func, args))
+    p = multiprocessing.Process(target=func, args=args)
     p.start()
     p.join(time)
     if (p.is_alive()):
@@ -66,18 +63,15 @@ def run_timed(func, args, time):
         p.join()
 
 def _test(n):
-    a = 1
+    a = 0
     for i in range(n):
         a += math.tan(i)
     return a
 
-def search_for_cycles(graph, monograph):
-    binance = ccxt.binance({
-        'apiKey': 'l',
-        'secret': 'L', })
+def search_for_cycles(exch, graph, monograph):
     paths = []
     while(True):
-        fetch(binance, graph)
+        fetch(exch, graph)
         path = collect_negative_cycle(graph)
         if path not in paths and path != None:
             print_results(graph, path)
@@ -85,32 +79,21 @@ def search_for_cycles(graph, monograph):
             balance = 100
             orderbook_depth = 10
             precision = 8
-            process_cycle(graph, monograph, path, binance, balance, orderbook_depth, precision)
+            process_cycle(graph, monograph, path, exch, balance, orderbook_depth, precision)
             break
     print('total number of cycles detected:', len(paths))
 
 
-from time import sleep
-
 start = time.time()
-#exch = binance()    
-#monograph, graph = init(exch)
-#run_timed(search_for_cycles, (graph, monograph), 3600)
-#search_for_cycles(graph, monograph)
-run_timed(_test, (20000000), 1)
 
+
+exch = binance()    
+monograph, graph = init(exch)
+run_timed(search_for_cycles, (exch, graph, monograph), 3600)
+
+#run_timed(_test, (10000000,), 4)
 #graph = read_graph_scv("in.csv")
 #path = collect_negative_cycle(graph)
 #print_results(graph, path)
 end = time.time()
 print(end - start)
-'''
-if path != None:
-    binance = ccxt.binance({
-        'apiKey': 'y',
-        'secret': 'Y', })
-    balance = 100
-    orderbook_depth = 10
-    precision = 8
-    process_cycle(graph, path, binance, balance, orderbook_depth, precision)
-'''
