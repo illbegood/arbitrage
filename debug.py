@@ -2,6 +2,8 @@ import csv
 import math
 import ccxt
 import time
+import threading
+import multiprocessing
 from process_cycle import process_cycle
 
 def write_graph_csv(graph, filepath):
@@ -52,12 +54,29 @@ def print_results(graph, path):
 from bellman_ford import collect_negative_cycle
 from fetch import binance, init, fetch
 
-def search_for_cycles(time_interval, graph, monograph):
+def run_process(func, args):
+    func(args)
+
+def run_timed(func, args, time):
+    p = multiprocessing.Process(target=run_process, args=(func, args))
+    p.start()
+    p.join(time)
+    if (p.is_alive()):
+        p.terminate()
+        p.join()
+
+def _test(n):
+    a = 1
+    for i in range(n):
+        a += math.tan(i)
+    return a
+
+def search_for_cycles(graph, monograph):
     binance = ccxt.binance({
         'apiKey': 'l',
         'secret': 'L', })
     paths = []
-    while(true):
+    while(True):
         fetch(binance, graph)
         path = collect_negative_cycle(graph)
         if path not in paths and path != None:
@@ -72,17 +91,19 @@ def search_for_cycles(time_interval, graph, monograph):
 
 
 from time import sleep
-from threading import Thread
 
-exch = binance()    
-monograph, graph = init(exch)
-Thread t = Thread(target = search_for_cycles, args = (graph, monograph))
-search_for_cycles(graph, monograph)
+start = time.time()
+#exch = binance()    
+#monograph, graph = init(exch)
+#run_timed(search_for_cycles, (graph, monograph), 3600)
+#search_for_cycles(graph, monograph)
+run_timed(_test, (20000000), 1)
 
 #graph = read_graph_scv("in.csv")
 #path = collect_negative_cycle(graph)
 #print_results(graph, path)
-
+end = time.time()
+print(end - start)
 '''
 if path != None:
     binance = ccxt.binance({
@@ -93,4 +114,3 @@ if path != None:
     precision = 8
     process_cycle(graph, path, binance, balance, orderbook_depth, precision)
 '''
-
