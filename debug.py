@@ -70,30 +70,32 @@ def _test(n):
 
 def search_for_cycles(exch, graph, monograph):
     paths = []
-    while(True):
-        fetch(exch, graph)
-        path = collect_negative_cycle(graph)
-        if path not in paths and path != None:
-            print_results(graph, path)
-            paths.append(path)
-            balance = 100
-            orderbook_depth = 10
-            precision = 8
-            process_cycle(graph, monograph, path, exch, balance, orderbook_depth, precision)
-            break
-    print('total number of cycles detected:', len(paths))
-
-
-start = time.time()
-
-
+    #while(True):
+    #fetch(exch, graph)
+    path = collect_negative_cycle(graph)
+    #if path not in paths and path != None:
+    if path is None:
+        path = collect_negative_cycle(read_graph_scv('cycle.csv'))
+    paths.append(path)
+    balance = 100
+    orderbook_depth = 10
+    precision = 8
+    process_cycle(graph, monograph, path, exch, balance, orderbook_depth, precision)
+    print_results(graph, path)
+    #break
+    #print('total number of cycles detected:', len(paths))
+    
+'''
+from collections import deque
+d = deque()
+d.append((1, 2))
+d.append((2, 3))
+for i in d:
+    for j in i:
+        print(j)
+quit()
+'''
 exch = binance()    
 monograph, graph = init(exch)
 run_timed(search_for_cycles, (exch, graph, monograph), 3600)
-
-#run_timed(_test, (10000000,), 4)
-#graph = read_graph_scv("in.csv")
-#path = collect_negative_cycle(graph)
-#print_results(graph, path)
-end = time.time()
-print(end - start)
+#write_graph_csv(graph, 'out.csv')

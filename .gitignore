@@ -1,7 +1,7 @@
 __pycache__/*
-*.csv
 *.txt
 .DS_STORE
 *.ipynb
+log
 
-optimize.py
+main.py

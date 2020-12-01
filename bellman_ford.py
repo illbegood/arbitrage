@@ -24,7 +24,7 @@ def relax(node, neighbour, graph, d, p):
 def retrace_negative_loop(p, start):
     arbitrageLoop = [start]
     if p[start] == None:
-        return None;
+        return None
     next_node = start
     while True:
         #print(next_node)
@@ -55,7 +55,7 @@ def bellman_ford(graph, source):
     return None
             
 def collect_negative_cycle(graph):
-    paths = []
+    #paths = []
     path = bellman_ford(graph, 'USDT')
     #if path not in paths and not None:
     #    paths.append(path)
