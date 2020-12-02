@@ -7,11 +7,13 @@ from collections.abc import Iterable
 #   for symb, (order_value, price)
 
 def write(deq, filename='log'):
-    logging.basicConfig(filename=filename, level=logging.DEBUG, format='%(message)s')
+    logging.basicConfig(filename=filename, level=logging.ERROR, format='%(message)s')
+    print(deq)
     for e in deq:
         if isinstance(e, Iterable):
             #map(print, deq)
-            for i in e:
-                logging.debug(i)
+            logging.error(str(e))
+            #for i in e:
+                #logging.debug(i)
         else:
             print(e)

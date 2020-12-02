@@ -6,8 +6,18 @@ from logger import write
 
 def truncate(f, n):
     return math.floor(f * 10 ** n) / 10 ** n
+    
+def convert_to_usdt(graph, monograph, currency, volume):
+    if currency != 'USDT':
+        if currency in monograph.keys() and 'USDT' in monograph[currency]:
+            #symb = 'USDT' + '/' + currency
+            price = math.exp(-graph['USDT'][currency])
+        else:
+            price = math.exp(-graph[currency]['USDT'])
+        return price * volume
+    return volume
 
-def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, depth):
+def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, depth, logDeque):
     max_volume = balance
     all_orderbooks = []
     for i in range(len(cycle) - 1):
@@ -30,6 +40,8 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, depth):
                 volume_in_next_currency += volume
             if volume_in_current_currency < max_volume:
                 max_volume = volume_in_next_currency
+            max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
+            logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
         else:
             symb = x_cur + '/' + x_next
             orderbook = exch.fetch_order_book(symb)['bids'][0:depth]
@@ -47,13 +59,16 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, depth):
                 volume_in_next_currency += volume * price
             if volume_in_current_currency < max_volume:
                 max_volume = volume_in_next_currency
+            max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
+            logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
     return max_volume, all_orderbooks
     
 def process_cycle(graph, monograph, cycle, exch, balance, orderbook_depth, precision):
     #logDict = {}
+    print(cycle)
     logDeque = deque()
     try:
-        trade_balance, all_orderbooks = get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, orderbook_depth)
+        trade_balance, all_orderbooks = get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, orderbook_depth, logDeque)
         fee = 0.001
         logDeque.append(('Total balance:', balance))
         logDeque.append(('Trade balance:', trade_balance))

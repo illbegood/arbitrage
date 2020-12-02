@@ -70,18 +70,19 @@ def _test(n):
 
 def search_for_cycles(exch, graph, monograph):
     paths = []
-    #while(True):
-    #fetch(exch, graph)
-    path = collect_negative_cycle(graph)
-    #if path not in paths and path != None:
-    if path is None:
-        path = collect_negative_cycle(read_graph_scv('cycle.csv'))
-    paths.append(path)
-    balance = 100
-    orderbook_depth = 10
-    precision = 8
-    process_cycle(graph, monograph, path, exch, balance, orderbook_depth, precision)
-    print_results(graph, path)
+    while(True):
+        fetch(exch, graph)
+        path = collect_negative_cycle(graph)
+        if path not in paths and path != None:
+        #if path is None:
+        #    path = collect_negative_cycle(read_graph_scv('cycle.csv'))
+            paths.append(path)
+            balance = 100
+            orderbook_depth = 10
+            precision = 8
+            process_cycle(graph, monograph, path, exch, balance, orderbook_depth, precision)
+        time.sleep(1)
+    #print_results(graph, path)
     #break
     #print('total number of cycles detected:', len(paths))
     
@@ -95,7 +96,9 @@ for i in d:
         print(j)
 quit()
 '''
-exch = binance()    
-monograph, graph = init(exch)
-run_timed(search_for_cycles, (exch, graph, monograph), 3600)
+if __name__ == '__main__':
+    exch = binance()
+    monograph, graph = init(exch)
+    time.sleep(1)
+    run_timed(search_for_cycles, (exch, graph, monograph), 3600)
 #write_graph_csv(graph, 'out.csv')

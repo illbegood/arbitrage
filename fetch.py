@@ -6,8 +6,8 @@ import re
 
 def binance():
     return ccxt.binance({
-    'apiKey': 'y',
-    'secret': 'Y', })
+    'apiKey': 'w',
+    'secret': 'Q', })
 
 def init(exch):
     return prefetch(exch)
@@ -61,7 +61,10 @@ def prefetch(exch):
     
 
 def fetch(exch, digraph):
-    exch.load_markets()
+    #exch.load_markets()
+    exch = ccxt.binance({
+    'apiKey': 't',
+    'secret': 'T', })
     if (exch.has['fetchTickers']):
         exch_tickers = exch.fetch_bids_asks()
         for symbol, data in exch_tickers.items():
