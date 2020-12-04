@@ -8,7 +8,9 @@ import logging
 import tabulate
 from process_cycle import process_cycle
 from bellman_ford import collect_negative_cycle
+import logger
 from fetch import binance, init, fetch
+from const import precision, orderbook_depth
 
 def write_graph_csv(graph, filepath):
     with open(filepath, 'w', newline='') as file:
@@ -33,9 +35,7 @@ def read_graph_scv(filepath):
                     graph[w][u] = float(v)
     return graph
     
-
 def print_results(graph, path):
-    #for path in paths:
     if path == None:
         print("No opportunity here :(")
     else:
@@ -61,38 +61,19 @@ def run_timed(func, args, time):
         p.terminate()
         p.join()
 
-def _test(n):
-    a = 0
-    for i in range(n):
-        a += math.tan(i)
-    return a
-
 def search_for_cycles(exch, graph, monograph):
     paths = []
     while(True):
         fetch(exch, graph)
         path = collect_negative_cycle(graph)
         if path not in paths and path != None:
-            print_results(graph, path)
             paths.append(path)
             balance = 100
-            orderbook_depth = 10
-            precision = 8
-            process_cycle(graph, monograph, path, exch, balance, orderbook_depth, precision)
-            break
-    print('total number of cycles detected:', len(paths))
-
-
-start = time.time()
-'''
-logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
-exch = binance()    
-monograph, graph = init(exch)
-run_timed(search_for_cycles, (exch, graph, monograph), 3600)
-'''
-run_timed(_test, (10000000,), 4)
-#graph = read_graph_scv("in.csv")
-#path = collect_negative_cycle(graph)
-#print_results(graph, path)
-end = time.time()
-print(end - start)
+            process_cycle(graph, monograph, path, exch, balance)
+        time.sleep(1)
+    
+if __name__ == '__main__':
+    exch = binance()
+    monograph, graph = init(exch)
+    time.sleep(1)
+    run_timed(search_for_cycles, (exch, graph, monograph), 3600)
