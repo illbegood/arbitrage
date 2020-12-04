@@ -71,9 +71,13 @@ def search_for_cycles(exch, graph, monograph):
             balance = 100
             process_cycle(graph, monograph, path, exch, balance)
         time.sleep(1)
-    
+import json  
 if __name__ == '__main__':
+   
     exch = binance()
     monograph, graph = init(exch)
+    with open("sample.json", "w") as outfile:
+        json.dump(graph, outfile)
+    quit()
     time.sleep(1)
     run_timed(search_for_cycles, (exch, graph, monograph), 3600)
