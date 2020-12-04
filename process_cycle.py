@@ -3,6 +3,7 @@ import numpy as np
 import math
 from collections import deque
 from logger import write
+from const import fee, precision, orderbook_depth
 
 def truncate(f, n):
     return math.floor(f * 10 ** n) / 10 ** n
@@ -17,7 +18,9 @@ def convert_to_usdt(graph, monograph, currency, volume):
         return price * volume
     return volume
 
-def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, depth, logDeque):
+def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
+    logDeque = deque()
+    logDeque.append(cycle)
     max_volume = balance
     all_orderbooks = []
     for i in range(len(cycle) - 1):
@@ -25,7 +28,7 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, depth, log
         x_next = cycle[i + 1]
         if x_cur in monograph.keys():
             symb = x_next + '/' + x_cur
-            orderbook = exch.fetch_order_book(symb)['asks'][0:depth]
+            orderbook = exch.fetch_order_book(symb)['asks'][0:orderbook_depth]
             all_orderbooks.append(orderbook)
             volume_in_current_currency = 0
             volume_in_next_currency = 0
@@ -44,7 +47,7 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, depth, log
             logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
         else:
             symb = x_cur + '/' + x_next
-            orderbook = exch.fetch_order_book(symb)['bids'][0:depth]
+            orderbook = exch.fetch_order_book(symb)['bids'][0:orderbook_depth]
             all_orderbooks.append(orderbook)
             volume_in_current_currency = 0
             volume_in_next_currency = 0
@@ -61,15 +64,12 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, depth, log
                 max_volume = volume_in_next_currency
             max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
             logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
-    return max_volume, all_orderbooks
+    return max_volume, all_orderbooks, logDeque
     
-def process_cycle(graph, monograph, cycle, exch, balance, orderbook_depth, precision):
-    #logDict = {}
-    print(cycle)
+def process_cycle(graph, monograph, cycle, exch, balance):
     logDeque = deque()
     try:
-        trade_balance, all_orderbooks = get_volume_and_orderbooks(graph, monograph, cycle, balance, exch, orderbook_depth, logDeque)
-        fee = 0.001
+        trade_balance, all_orderbooks, logDeque = get_volume_and_orderbooks(graph, monograph, cycle, balance, exch)
         logDeque.append(('Total balance:', balance))
         logDeque.append(('Trade balance:', trade_balance))
         for i in range(len(cycle) - 1):
@@ -120,6 +120,5 @@ def process_cycle(graph, monograph, cycle, exch, balance, orderbook_depth, preci
         logDeque.append(('End balance:', trade_balance))
     except Exception as e:
         logDeque.append(e)
-    finally:
-        write(logDeque)
+    return logDeque
     
