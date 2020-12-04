@@ -1,5 +1,6 @@
 __pycache__/*
 *.txt
+*.csv
 .DS_STORE
 *.ipynb
 log
