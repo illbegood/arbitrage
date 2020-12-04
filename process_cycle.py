@@ -69,7 +69,8 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
 def process_cycle(graph, monograph, cycle, exch, balance):
     logDeque = deque()
     try:
-        trade_balance, all_orderbooks, logDeque = get_volume_and_orderbooks(graph, monograph, cycle, balance, exch)
+        trade_balance, all_orderbooks, innerLogDeque = get_volume_and_orderbooks(graph, monograph, cycle, balance, exch)
+        logDeque += innerLogDeque
         logDeque.append(('Total balance:', balance))
         logDeque.append(('Trade balance:', trade_balance))
         for i in range(len(cycle) - 1):
