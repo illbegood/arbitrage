@@ -20,51 +20,55 @@ def convert_to_usdt(graph, monograph, currency, volume):
 
 def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
     logDeque = deque()
-    logDeque.append(cycle)
-    max_volume = balance
-    all_orderbooks = []
-    for i in range(len(cycle) - 1):
-        x_cur = cycle[i]
-        x_next = cycle[i + 1]
-        if x_cur in monograph and x_next in monograph[x_cur]:
-            symb = x_cur + '/' + x_next
-            orderbook = exch.fetch_order_book(symb)['asks'][0:orderbook_depth]
-            all_orderbooks.append(orderbook)
-            volume_in_current_currency = 0
-            volume_in_next_currency = 0
-            for order in orderbook:
-                price = order[0]
-                volume = order[1]
-                if volume_in_current_currency + volume * price > max_volume:
-                    max_volume = (max_volume - volume_in_current_currency) / price + volume_in_next_currency
-                    volume_in_current_currency = float('inf')
-                    break
-                volume_in_current_currency += volume * price
-                volume_in_next_currency += volume
-            if volume_in_current_currency < max_volume:
-                max_volume = volume_in_next_currency
-            max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
-            logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
-        else:
-            symb = x_next + '/' + x_cur
-            orderbook = exch.fetch_order_book(symb)['bids'][0:orderbook_depth]
-            all_orderbooks.append(orderbook)
-            volume_in_current_currency = 0
-            volume_in_next_currency = 0
-            for order in orderbook:
-                price = order[0]
-                volume = order[1]
-                if volume_in_current_currency + volume > max_volume:
-                    max_volume = (max_volume - volume_in_current_currency) * price + volume_in_next_currency
-                    volume_in_current_currency = float('inf')
-                    break
-                volume_in_current_currency += volume
-                volume_in_next_currency += volume * price
-            if volume_in_current_currency < max_volume:
-                max_volume = volume_in_next_currency
-            max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
-            logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
-    return max_volume, all_orderbooks, logDeque
+    try:
+        logDeque.append(cycle)
+        max_volume = balance
+        all_orderbooks = []
+        for i in range(len(cycle) - 1):
+            x_cur = cycle[i]
+            x_next = cycle[i + 1]
+            if x_cur in monograph and x_next in monograph[x_cur]:
+                symb = x_cur + '/' + x_next
+                orderbook = exch.fetch_order_book(symb)['asks'][0:orderbook_depth]
+                all_orderbooks.append(orderbook)
+                volume_in_current_currency = 0
+                volume_in_next_currency = 0
+                for order in orderbook:
+                    price = order[0]
+                    volume = order[1]
+                    if volume_in_current_currency + volume * price > max_volume:
+                        max_volume = (max_volume - volume_in_current_currency) / price + volume_in_next_currency
+                        volume_in_current_currency = float('inf')
+                        break
+                    volume_in_current_currency += volume * price
+                    volume_in_next_currency += volume
+                if volume_in_current_currency < max_volume:
+                    max_volume = volume_in_next_currency
+                max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
+                logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
+            else:
+                symb = x_next + '/' + x_cur
+                orderbook = exch.fetch_order_book(symb)['bids'][0:orderbook_depth]
+                all_orderbooks.append(orderbook)
+                volume_in_current_currency = 0
+                volume_in_next_currency = 0
+                for order in orderbook:
+                    price = order[0]
+                    volume = order[1]
+                    if volume_in_current_currency + volume > max_volume:
+                        max_volume = (max_volume - volume_in_current_currency) * price + volume_in_next_currency
+                        volume_in_current_currency = float('inf')
+                        break
+                    volume_in_current_currency += volume
+                    volume_in_next_currency += volume * price
+                if volume_in_current_currency < max_volume:
+                    max_volume = volume_in_next_currency
+                max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
+                logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
+        return max_volume, all_orderbooks, logDeque
+    except Exception as e:
+        logDeque.append(e)
+    return logDeque
     
 def process_cycle(graph, monograph, cycle, exch, balance):
     logDeque = deque()
