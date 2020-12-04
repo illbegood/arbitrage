@@ -1,16 +1,12 @@
-import csv
+import logging
 import math
-import ccxt
+import multiprocessing
 import time
 import threading
-import multiprocessing
-import logging
-import tabulate
-from process_cycle import process_cycle
 from bellman_ford import collect_negative_cycle
-import logging
-from fetch import binance, init, fetch
 from const import precision, orderbook_depth
+from fetch import binance, init, fetch
+from process_cycle import process_cycle
 
 def write_log(deq, filename='log'):
     logging.basicConfig(filename=filename, level=logging.ERROR, format='%(message)s')
