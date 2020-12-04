@@ -71,7 +71,7 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
         if logDeque[-1] is not None: 
             logDeque.append(format_exc())
             logDeque.append(None)
-        return logDeque
+        return None, None, logDeque
     
 def process_cycle(graph, monograph, cycle, exch, balance):
     logDeque = deque()
