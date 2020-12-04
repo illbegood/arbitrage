@@ -128,7 +128,10 @@ def process_cycle(graph, monograph, cycle, exch, balance):
                         order_idx += 1
             trade_balance = next_cur_balance
         logDeque.append(('End balance:', trade_balance))
-    except Exception as e:
-        logDeque.append(format_exc())
-    return logDeque
+    except:
+        if logDeque[-1] is not None: 
+            logDeque.append(format_exc())
+            logDeque.append(None)
+    finally:
+        return logDeque
     
