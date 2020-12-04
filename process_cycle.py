@@ -4,6 +4,7 @@ import math
 from collections import deque
 from logger import write
 from const import fee, precision, orderbook_depth
+from traceback import format_exc
 
 def truncate(f, n):
     return math.floor(f * 10 ** n) / 10 ** n
@@ -66,15 +67,19 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
                 max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
                 logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
         return max_volume, all_orderbooks, logDeque
-    except Exception as e:
-        logDeque.append(e)
-    return logDeque
+    except:
+        if logDeque[-1] is not None: 
+            logDeque.append(format_exc())
+            logDeque.append(None)
+        return logDeque
     
 def process_cycle(graph, monograph, cycle, exch, balance):
     logDeque = deque()
     try:
         trade_balance, all_orderbooks, innerLogDeque = get_volume_and_orderbooks(graph, monograph, cycle, balance, exch)
         logDeque += innerLogDeque
+        if logDeque[-1] is None:
+            raise Exception('')
         logDeque.append(('Total balance:', balance))
         logDeque.append(('Trade balance:', trade_balance))
         for i in range(len(cycle) - 1):
@@ -124,6 +129,6 @@ def process_cycle(graph, monograph, cycle, exch, balance):
             trade_balance = next_cur_balance
         logDeque.append(('End balance:', trade_balance))
     except Exception as e:
-        logDeque.append(e)
+        logDeque.append(format_exc())
     return logDeque
     
