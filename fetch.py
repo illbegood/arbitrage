@@ -15,7 +15,7 @@ def init(exch):
 
 def get_directions_and_weights(symbol, data):
     #fee = -math.log(1 - 0.001)
-    node_to, node_from = symbol.split('/')
+    node_from, node_to = symbol.split('/')
     try:
         w_to = -math.log(1 / float(data['info']['askPrice'])) - math.log(1 - fee)
         w_from = -math.log(float(data['info']['bidPrice'])) - math.log(1 - fee)

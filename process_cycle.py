@@ -26,8 +26,8 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
     for i in range(len(cycle) - 1):
         x_cur = cycle[i]
         x_next = cycle[i + 1]
-        if x_cur in monograph.keys():
-            symb = x_next + '/' + x_cur
+        if x_cur in monograph and x_next in monograph[x_cur]:
+            symb = x_cur + '/' + x_next
             orderbook = exch.fetch_order_book(symb)['asks'][0:orderbook_depth]
             all_orderbooks.append(orderbook)
             volume_in_current_currency = 0
@@ -46,7 +46,7 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
             max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
             logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
         else:
-            symb = x_cur + '/' + x_next
+            symb = x_next + '/' + x_cur
             orderbook = exch.fetch_order_book(symb)['bids'][0:orderbook_depth]
             all_orderbooks.append(orderbook)
             volume_in_current_currency = 0
@@ -76,8 +76,8 @@ def process_cycle(graph, monograph, cycle, exch, balance):
             x_cur = cycle[i]
             x_next = cycle[i + 1]
             next_cur_balance = 0
-            if x_cur in monograph.keys():
-                symb = x_next + '/' + x_cur
+            if x_cur in monograph and x_next in monograph[x_cur]:
+                symb = x_cur + '/' + x_next
                 logDeque.append((symb, trade_balance))
                 orderbook = all_orderbooks[i]
                 order_idx = 0
@@ -97,7 +97,7 @@ def process_cycle(graph, monograph, cycle, exch, balance):
                         next_cur_balance += order_volume * (1 - fee)
                         order_idx += 1
             else:
-                symb = x_cur + '/' + x_next
+                symb = x_next + '/' + x_cur
                 logDeque.append((symb, trade_balance))
                 orderbook = all_orderbooks[i]
                 order_idx = 0
