@@ -5,3 +5,5 @@ __pycache__/*
 log
 
 main.py
+telegram.py
+trade.py
