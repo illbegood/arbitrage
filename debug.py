@@ -75,7 +75,7 @@ import json
 if __name__ == '__main__':
     exch = fetch.binance()
     monograph, graph = fetch.init(exch)
-    with open("sample.json", "w") as outfile:
+    with open("sample.json", "a") as outfile:
         json.dump(graph, outfile)
     quit()
     #run_timed(search_for_cycles, (exch, graph, monograph), 3600)

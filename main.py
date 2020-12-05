@@ -3,6 +3,7 @@ import math
 import multiprocessing
 import time
 import threading
+import json
 
 import logger
 import fetch
@@ -31,6 +32,8 @@ def process_cycle_iter(exch, graph, monograph):
             balance = 100
             logs = process_cycle(graph, monograph, path, exch, balance)
             logger.write(logs)
+            with open("sample.json", "a") as outfile:
+                json.dump(graph, outfile)
             break
     return path
 

@@ -1,4 +1,5 @@
 import logging
+import string
 from collections.abc import Iterable
 
 def write(deq, filename='log'):
@@ -6,5 +7,5 @@ def write(deq, filename='log'):
 #    message = ' '.join(map(str, deq)) + '\n'
 #    logging.error(message)
     for e in deq:
-        message = ' '.join(e) if isinstance(e, Iterable)  else str(e)
+        message = ' '.join(map(str, e)) if isinstance(e, Iterable)  else str(e)
         logging.error(message)

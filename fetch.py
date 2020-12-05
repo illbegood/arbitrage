@@ -29,6 +29,7 @@ def get_directions_and_weights(symbol, data):
 def update_monograph(monograph, node_from, node_to):
     if node_from not in monograph:
         monograph[node_from] = []
+    if node_to not in monograph[node_from]:
         monograph[node_from].append(node_to)
         
 def update_digraph(digraph, node_from, node_to, w_from, w_to, lazy = True):
