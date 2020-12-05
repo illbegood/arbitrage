@@ -33,7 +33,7 @@ def process_cycle_iter(exch, graph, monograph):
             logs = process_cycle(graph, monograph, path, exch, balance)
             logger.write(logs)
             with open("sample.json", "a") as outfile:
-                json.dump(graph, outfile)
+                json.dump(graph, outfile, indent=2)
             break
     return path
 
