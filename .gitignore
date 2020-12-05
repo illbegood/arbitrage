@@ -1,6 +1,7 @@
 __pycache__/*
 *.txt
 *.csv
+*.json
 .DS_STORE
 *.ipynb
 log
