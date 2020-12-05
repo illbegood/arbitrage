@@ -46,6 +46,7 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
                 if volume_in_current_currency < max_volume:
                     max_volume = volume_in_next_currency
                 max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
+                logDeque((symb, orderbook))
                 logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
             else:
                 symb = x_next + '/' + x_cur
@@ -65,6 +66,7 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
                 if volume_in_current_currency < max_volume:
                     max_volume = volume_in_next_currency
                 max_volume_usdt = convert_to_usdt(graph, monograph, x_next, max_volume)
+                logDeque((symb, orderbook))
                 logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
         return max_volume, all_orderbooks, logDeque
     except:
