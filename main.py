@@ -24,12 +24,14 @@ def run_timed(func, args, time):
         p.join()
 
 def process_cycle_iter(exch, graph, monograph):
-    fetch.fetch(exch, graph)
-    path = collect_negative_cycle(graph)
-    if path != None:
-        balance = 100
-        logs = process_cycle(graph, monograph, path, exch, balance)
-        logger.write(logs)
+    while True:
+        fetch.fetch(exch, graph)
+        path = collect_negative_cycle(graph)
+        if path != None:
+            balance = 100
+            logs = process_cycle(graph, monograph, path, exch, balance)
+            logger.write(logs)
+            break
     return path
 
 def search_for_cycles(exch, graph, monograph):
