@@ -4,17 +4,19 @@ from datetime import datetime
 import numpy as np
 import re
 from const import fee
+import string
+import random
 
 def binance():
+    letter = random.choice(string.ascii_letters)
     return ccxt.binance({
-    'apiKey': 'w',
-    'secret': 'Q', })
+    'apiKey': letter,
+    'secret': letter.swapcase(), })
 
 def init(exch):
     return prefetch(exch)
 
 def get_directions_and_weights(symbol, data):
-    #fee = -math.log(1 - 0.001)
     node_from, node_to = symbol.split('/')
     try:
         w_to = -math.log(1 / float(data['info']['askPrice'])) - math.log(1 - fee)
@@ -65,9 +67,7 @@ def prefetch(exch):
 
 def fetch(exch, digraph):
     #exch.load_markets()
-    exch = ccxt.binance({
-    'apiKey': 't',
-    'secret': 'T', })
+    exch = binance()
     if (exch.has['fetchTickers']):
         exch_tickers = exch.fetch_bids_asks()
         for symbol, data in exch_tickers.items():

@@ -9,7 +9,7 @@ import tabulate
 from process_cycle import process_cycle
 from bellman_ford import collect_negative_cycle
 import logger
-from fetch import binance, init, fetch
+import fetch
 from const import precision, orderbook_depth
 
 def write_graph_csv(graph, filepath):
@@ -64,7 +64,7 @@ def run_timed(func, args, time):
 def search_for_cycles(exch, graph, monograph):
     paths = []
     while(True):
-        fetch(exch, graph)
+        fetch.fetch(exch, graph)
         path = collect_negative_cycle(graph)
         if path not in paths and path != None:
             paths.append(path)
@@ -73,11 +73,9 @@ def search_for_cycles(exch, graph, monograph):
         time.sleep(1)
 import json  
 if __name__ == '__main__':
-   
-    exch = binance()
-    monograph, graph = init(exch)
+    exch = fetch.binance()
+    monograph, graph = fetch.init(exch)
     with open("sample.json", "w") as outfile:
         json.dump(graph, outfile)
     quit()
-    time.sleep(1)
-    run_timed(search_for_cycles, (exch, graph, monograph), 3600)
+    #run_timed(search_for_cycles, (exch, graph, monograph), 3600)

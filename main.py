@@ -3,9 +3,11 @@ import math
 import multiprocessing
 import time
 import threading
+
+import logger
+import fetch
 from bellman_ford import collect_negative_cycle
 from const import precision, orderbook_depth
-from fetch import binance, init, fetch
 from process_cycle import process_cycle
 
 def write_log(deq, filename='log'):
@@ -21,21 +23,24 @@ def run_timed(func, args, time):
         p.terminate()
         p.join()
 
+def process_cycle_iter(exch, graph, monograph):
+    fetch.fetch(exch, graph)
+    path = collect_negative_cycle(graph)
+    if path != None:
+        balance = 100
+        logs = process_cycle(graph, monograph, path, exch, balance)
+        logger.write(logs)
+    return path
+
 def search_for_cycles(exch, graph, monograph):
-    paths = []
+    #paths = []
     while(True):
-        fetch(exch, graph)
-        path = collect_negative_cycle(graph)
-        if path not in paths and path != None:
-            paths.append(path)
-            balance = 100
-            logs = process_cycle(graph, monograph, path, exch, balance)
-            write_log(logs)
-        time.sleep(1)
+        #paths.append(process_cycle_iter(exch, graph, monograph))
+        process_cycle_iter(exch, graph, monograph)
     
 if __name__ == '__main__':
-    exch = binance()
-    monograph, graph = init(exch)
-    time.sleep(1)
-    run_timed(search_for_cycles, (exch, graph, monograph), 3600)
+    exch = fetch.binance()
+    monograph, graph = fetch.init(exch)
+    process_cycle_iter(exch, graph, monograph)
+    #run_timed(search_for_cycles, (exch, graph, monograph), 3600)
 
