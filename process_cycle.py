@@ -1,5 +1,3 @@
-import ccxt
-import numpy as np
 import math
 from collections import deque
 from logger import write

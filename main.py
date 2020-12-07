@@ -6,10 +6,10 @@ import threading
 import json
 
 import logger
-import fetch
 from bellman_ford import collect_negative_cycle
 from const import precision, orderbook_depth
 from process_cycle import process_cycle
+from fetch import prefetch, fetch, binance
 
 def write_log(deq, filename='log'):
     logging.basicConfig(filename=filename, level=logging.ERROR, format='%(message)s')
@@ -26,7 +26,7 @@ def run_timed(func, args, time):
 
 def process_cycle_iter(exch, graph, monograph):
     while True:
-        fetch.fetch(exch, graph)
+        fetch(exch, graph)
         path = collect_negative_cycle(graph)
         if path != None:
             balance = 100
@@ -44,8 +44,8 @@ def search_for_cycles(exch, graph, monograph):
         process_cycle_iter(exch, graph, monograph)
     
 if __name__ == '__main__':
-    exch = fetch.binance()
-    monograph, graph = fetch.init(exch)
+    exch = binance()
+    monograph, graph = prefetch(exch)
     process_cycle_iter(exch, graph, monograph)
     #run_timed(search_for_cycles, (exch, graph, monograph), 3600)
 

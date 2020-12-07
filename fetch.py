@@ -1,8 +1,5 @@
 import ccxt
 import math
-from datetime import datetime
-import numpy as np
-import re
 from const import fee
 import string
 import random
@@ -12,9 +9,6 @@ def binance():
     return ccxt.binance({
     'apiKey': letter,
     'secret': letter.swapcase(), })
-
-def init(exch):
-    return prefetch(exch)
 
 def get_directions_and_weights(symbol, data):
     node_from, node_to = symbol.split('/')
@@ -59,10 +53,7 @@ def prefetch(exch):
     if (exch.has['fetchTickers']):
         exch_tickers = exch.fetch_bids_asks()
         for symbol, data in exch_tickers.items():
-            try:
-                add_edges(symbol, data, monograph, digraph)
-            except:
-                print('symbol error')
+            add_edges(symbol, data, monograph, digraph)
     return monograph, digraph
     
 
@@ -72,8 +63,5 @@ def fetch(exch, digraph):
     if (exch.has['fetchTickers']):
         exch_tickers = exch.fetch_bids_asks()
         for symbol, data in exch_tickers.items():
-            try:
-                update_edges(symbol, data, digraph)
-            except:
-                print('symbol error')
+            update_edges(symbol, data, digraph)
 

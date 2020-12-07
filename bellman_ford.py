@@ -1,8 +1,4 @@
-import ccxt
 import math
-from datetime import datetime
-import numpy as np
-import re
 
 # Step 1: For each node prepare the destination and predecessor
 def initialize(graph, source):
