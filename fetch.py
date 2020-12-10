@@ -1,20 +1,30 @@
-import ccxt
 import math
-from const import fee
+from const import fee, quote_assets, base_url, orderbook_depth
 import string
 import random
+import requests
+    
+def split_symbol(symbol):
+    if symbol[-3:] in quote_assets:
+        return symbol[:-3], symbol[-3:]
+    return symbol[:-4], symbol[-4:]
 
-def binance():
-    letter = random.choice(string.ascii_letters)
-    return ccxt.binance({
-    'apiKey': letter,
-    'secret': letter.swapcase(), })
+def binance_fetch_tickers():
+    url = base_url + '/api/v3/ticker/bookTicker'
+    response = requests.get(url).json()
+    tickers = list(map(lambda x: [split_symbol(x['symbol']), float(x['askPrice']), float(x['bidPrice'])], response))
+    return tickers
+    
+def binance_fetch_orderbook(symbol):
+    url = base_url + "/api/v3/depth"
+    orderbook = requests.get(url, {'symbol': symbol, 'limit' : orderbook_depth}).json()
+    return orderbook
 
-def get_directions_and_weights(symbol, data):
-    node_from, node_to = symbol.split('/')
+def get_directions_and_weights(nodes, ask_price, bid_price):
+    node_from, node_to = nodes[0], nodes[1]
     try:
-        w_to = -math.log(1 / float(data['info']['askPrice'])) - math.log(1 - fee)
-        w_from = -math.log(float(data['info']['bidPrice'])) - math.log(1 - fee)
+        w_to = math.log(ask_price / math.log(1 - fee))
+        w_from = math.log(1 / (bid_price * (1 - fee)))
     except:
         w_to = float('inf')
         w_from = float('inf')
@@ -37,31 +47,25 @@ def update_digraph(digraph, node_from, node_to, w_from, w_to, lazy = True):
     if w_from != float('inf'):
         digraph[node_to][node_from] = w_from
 
-def add_edges(symbol, data, monograph, digraph):
-    node_to, node_from, w_to, w_from = get_directions_and_weights(symbol, data)
+def add_edges(nodes, ask_price, bid_price, monograph, digraph):
+    node_to, node_from, w_to, w_from = get_directions_and_weights(nodes, ask_price, bid_price)
     update_monograph(monograph, node_from, node_to)
     update_digraph(digraph, node_from, node_to, w_from, w_to, False)
 
-def update_edges(symbol, data, digraph):
-    node_to, node_from, w_to, w_from = get_directions_and_weights(symbol, data)
-    update_digraph(digraph, node_from, node_to, w_from, w_to)    
+def update_edges(nodes, ask_price, bid_price, digraph):
+    node_to, node_from, w_to, w_from = get_directions_and_weights(nodes, ask_price, bid_price)
+    update_digraph(digraph, node_from, node_to, w_from, w_to)
 
-def prefetch(exch):
+def prefetch():
     monograph = {}
     digraph = {}
-    exch.load_markets()
-    if (exch.has['fetchTickers']):
-        exch_tickers = exch.fetch_bids_asks()
-        for symbol, data in exch_tickers.items():
-            add_edges(symbol, data, monograph, digraph)
+    exch_tickers = binance_fetch_tickers()
+    for nodes, ask_price, bid_price in exch_tickers:
+        add_edges(nodes, ask_price, bid_price, monograph, digraph)
     return monograph, digraph
-    
 
-def fetch(exch, digraph):
-    #exch.load_markets()
-    exch = binance()
-    if (exch.has['fetchTickers']):
-        exch_tickers = exch.fetch_bids_asks()
-        for symbol, data in exch_tickers.items():
-            update_edges(symbol, data, digraph)
+def fetch(digraph):
+    exch_tickers = binance_fetch_tickers()
+    for nodes, ask_price, bid_price in exch_tickers:
+        update_edges(nodes, ask_price, bid_price, digraph)
 

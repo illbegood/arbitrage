@@ -2,6 +2,7 @@ import math
 from collections import deque
 from logger import write
 from const import fee, precision, orderbook_depth
+from fetch import binance_fetch_orderbook
 from traceback import format_exc
 
 def truncate(f, n):
@@ -17,7 +18,7 @@ def convert_to_usdt(graph, monograph, currency, volume):
         return price * volume
     return volume
 
-def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
+def get_volume_and_orderbooks(graph, monograph, cycle, balance):
     logDeque = deque()
     try:
         logDeque.append(cycle)
@@ -27,8 +28,9 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
             x_cur = cycle[i]
             x_next = cycle[i + 1]
             if x_cur in monograph and x_next in monograph[x_cur]:
-                symb = x_cur + '/' + x_next
-                orderbook = exch.fetch_order_book(symb)['asks'][0:orderbook_depth]
+                symb = x_cur + x_next
+                #orderbook = exch.fetch_order_book(symb)['asks'][0:orderbook_depth]
+                orderbook = binance_fetch_orderbook(symb)['asks']
                 all_orderbooks.append(orderbook)
                 volume_in_current_currency = 0
                 volume_in_next_currency = 0
@@ -47,8 +49,9 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
                 logDeque.append((symb, orderbook))
                 logDeque.append((x_next + ' volume, ' + x_next + ' volume in USD', max_volume, max_volume_usdt))
             else:
-                symb = x_next + '/' + x_cur
-                orderbook = exch.fetch_order_book(symb)['bids'][0:orderbook_depth]
+                symb = x_next + x_cur
+                #orderbook = exch.fetch_order_book(symb)['bids'][0:orderbook_depth]
+                orderbook = binance_fetch_orderbook(symb)['bids']
                 all_orderbooks.append(orderbook)
                 volume_in_current_currency = 0
                 volume_in_next_currency = 0
@@ -73,10 +76,10 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance, exch):
             logDeque.append(None)
         return None, None, logDeque
     
-def process_cycle(graph, monograph, cycle, exch, balance):
+def process_cycle(graph, monograph, cycle, balance):
     logDeque = deque()
     try:
-        trade_balance, all_orderbooks, innerLogDeque = get_volume_and_orderbooks(graph, monograph, cycle, balance, exch)
+        trade_balance, all_orderbooks, innerLogDeque = get_volume_and_orderbooks(graph, monograph, cycle, balance)
         logDeque += innerLogDeque
         if logDeque[-1] is None:
             raise Exception('')
