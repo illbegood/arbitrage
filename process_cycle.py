@@ -35,8 +35,8 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance):
                 volume_in_current_currency = 0
                 volume_in_next_currency = 0
                 for order in orderbook:
-                    price = order[0]
-                    volume = order[1]
+                    price = float(order[0])
+                    volume = float(order[1])
                     if volume_in_current_currency + volume * price > max_volume:
                         max_volume = (max_volume - volume_in_current_currency) / price + volume_in_next_currency
                         volume_in_current_currency = float('inf')
@@ -56,8 +56,8 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance):
                 volume_in_current_currency = 0
                 volume_in_next_currency = 0
                 for order in orderbook:
-                    price = order[0]
-                    volume = order[1]
+                    price = float(order[0])
+                    volume = float(order[1])
                     if volume_in_current_currency + volume > max_volume:
                         max_volume = (max_volume - volume_in_current_currency) * price + volume_in_next_currency
                         volume_in_current_currency = float('inf')
