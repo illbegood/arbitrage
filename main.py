@@ -9,7 +9,7 @@ import logger
 from bellman_ford import collect_negative_cycle
 from const import precision, orderbook_depth
 from process_cycle import process_cycle
-from trade import trade
+#from trade import trade
 from fetch import prefetch, fetch
 
 def run_timed(func, args, time):
