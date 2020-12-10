@@ -1,24 +1,6 @@
 import math
-from const import fee, quote_assets, base_url, orderbook_depth
-import string
-import random
-import requests
-    
-def split_symbol(symbol):
-    if symbol[-3:] in quote_assets:
-        return symbol[:-3], symbol[-3:]
-    return symbol[:-4], symbol[-4:]
-
-def binance_fetch_tickers():
-    url = base_url + '/api/v3/ticker/bookTicker'
-    response = requests.get(url).json()
-    tickers = list(map(lambda x: [split_symbol(x['symbol']), float(x['askPrice']), float(x['bidPrice'])], response))
-    return tickers
-    
-def binance_fetch_orderbook(symbol):
-    url = base_url + "/api/v3/depth"
-    orderbook = requests.get(url, {'symbol': symbol, 'limit' : orderbook_depth}).json()
-    return orderbook
+import binance
+from const import fee
 
 def get_directions_and_weights(nodes, ask_price, bid_price):
     node_from, node_to = nodes[0], nodes[1]
@@ -59,13 +41,13 @@ def update_edges(nodes, ask_price, bid_price, digraph):
 def prefetch():
     monograph = {}
     digraph = {}
-    exch_tickers = binance_fetch_tickers()
+    exch_tickers = binance.fetch_tickers()
     for nodes, ask_price, bid_price in exch_tickers:
         add_edges(nodes, ask_price, bid_price, monograph, digraph)
     return monograph, digraph
 
 def fetch(digraph):
-    exch_tickers = binance_fetch_tickers()
+    exch_tickers = binance.fetch_tickers()
     for nodes, ask_price, bid_price in exch_tickers:
         update_edges(nodes, ask_price, bid_price, digraph)
 

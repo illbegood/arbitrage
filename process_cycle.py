@@ -1,8 +1,8 @@
 import math
+import binance
 from collections import deque
 from logger import write
 from const import fee, precision, orderbook_depth
-from fetch import binance_fetch_orderbook
 from traceback import format_exc
 
 def truncate(f, n):
@@ -30,7 +30,7 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance):
             if x_cur in monograph and x_next in monograph[x_cur]:
                 symb = x_cur + x_next
                 #orderbook = exch.fetch_order_book(symb)['asks'][0:orderbook_depth]
-                orderbook = binance_fetch_orderbook(symb)['asks']
+                orderbook = binance.fetch_orderbook(symb)['asks']
                 all_orderbooks.append(orderbook)
                 volume_in_current_currency = 0
                 volume_in_next_currency = 0
@@ -51,7 +51,7 @@ def get_volume_and_orderbooks(graph, monograph, cycle, balance):
             else:
                 symb = x_next + x_cur
                 #orderbook = exch.fetch_order_book(symb)['bids'][0:orderbook_depth]
-                orderbook = binance_fetch_orderbook(symb)['bids']
+                orderbook = binance.fetch_orderbook(symb)['bids']
                 all_orderbooks.append(orderbook)
                 volume_in_current_currency = 0
                 volume_in_next_currency = 0
