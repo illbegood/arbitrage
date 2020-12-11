@@ -9,7 +9,7 @@ import logger
 from bellman_ford import collect_negative_cycle
 from const import precision, orderbook_depth
 from process_cycle import process_cycle
-#from trade import trade
+from trade import trade
 from fetch import prefetch, fetch
 
 def run_timed(func, args, time):
@@ -26,7 +26,7 @@ def process_cycle_iter(graph, monograph):
         path = collect_negative_cycle(graph)
         if path != None:
             balance = 100
-            logs = process_cycle(graph, monograph, path, balance)
+            logs = trade(graph, monograph, path, balance)
             logger.write(logs)
             #with open("sample.json", "a") as outfile:
             #    json.dump(graph, outfile, indent=2)
