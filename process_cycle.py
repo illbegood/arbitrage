@@ -95,8 +95,8 @@ def process_cycle(graph, monograph, cycle, balance):
                 orderbook = all_orderbooks[i]
                 order_idx = 0
                 while (order_idx < orderbook_depth):
-                    price = orderbook[order_idx][0]
-                    volume = orderbook[order_idx][1] * price
+                    price = float(orderbook[order_idx][0])
+                    volume = float(orderbook[order_idx][1]) * price
                     if volume > trade_balance:
                         order_volume = truncate(trade_balance / price, precision)
                         logDeque.append(('BUY:', order_volume, price))
@@ -115,8 +115,8 @@ def process_cycle(graph, monograph, cycle, balance):
                 orderbook = all_orderbooks[i]
                 order_idx = 0
                 while (order_idx < orderbook_depth):
-                    price = orderbook[order_idx][0]
-                    volume = orderbook[order_idx][1]
+                    price = float(orderbook[order_idx][0])
+                    volume = float(orderbook[order_idx][1])
                     if volume > trade_balance:
                         order_volume = truncate(trade_balance, precision)
                         logDeque.append(('SELL', order_volume, price))
