@@ -31,6 +31,7 @@ def process_cycle_iter(graph, monograph):
             #with open("sample.json", "a") as outfile:
             #    json.dump(graph, outfile, indent=2)
             #break
+        time.sleep(0.5)
     return path
 
 def search_for_cycles(exch, graph, monograph):

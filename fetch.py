@@ -5,7 +5,7 @@ from const import fee
 def get_directions_and_weights(nodes, ask_price, bid_price):
     node_from, node_to = nodes[0], nodes[1]
     try:
-        w_to = math.log(ask_price / math.log(1 - fee))
+        w_to = math.log(ask_price / (1 - fee))
         w_from = math.log(1 / (bid_price * (1 - fee)))
     except:
         w_to = float('inf')
