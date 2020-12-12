@@ -43,9 +43,48 @@ def get_trade_args(graph, monograph, cycle, balance):
         for i in range(len(cycle) - 1):
             x_cur = cycle[i]
             x_next = cycle[i + 1]
+<<<<<<< HEAD
             SELL = x_cur in monograph and x_next in monograph[x_cur]
             max_volume, expected_profit, innerLogDeque = get_trade_args_iter(SELL, graph, x_cur, x_next, orders, max_volume, expected_profit)
             logDeque += innerLogDeque
+=======
+            # Sell Case:
+            # Imagine cycle [USDT BTC ETH USDT]
+            # x_cur = ETH
+            # x_next = USDT
+            # binance symbol ETHUSDT = x_cur + x_next
+            if x_cur in monograph and x_next in monograph[x_cur]:
+                symb = x_cur + x_next
+                order = binance.fetch_orderbook(symb)['bids'][0]
+                price, volume = float(order[0]), float(order[1])
+                orders.append([price, volume])
+                if volume > max_volume:
+                    max_volume *= price
+                else:
+                    max_volume = volume * price
+                expected_profit *= (price * (1 + fee))
+                expected_price = math.exp(-graph[x_next][x_cur])
+                logDeque.append(('SELL ' + symb + ' price, expected price: ', price * (1 - fee), expected_price)) # fees included
+                logDeque.append((x_next + ' volume, ', max_volume))
+            # Buy Case:
+            # Imagine cycle [USDT BTC ETH USDT]
+            # x_cur = USDT
+            # x_next = BTC
+            # binance symbol BTCUSDT = x_next + x_cur
+            else:
+                symb = x_next + x_cur
+                order = binance.fetch_orderbook(symb)['asks'][0]
+                price, volume = float(order[0]), float(order[1])
+                orders.append([price, volume])
+                if volume * price > max_volume:
+                    max_volume /= price
+                else:
+                    max_volume = volume
+                expected_profit /= (price * (1 - fee))
+                expected_price = 1 / math.exp(-graph[x_next][x_cur])
+                logDeque.append(('BUY ' + symb + ' price, expected price: ', price * (1 - fee), expected_price)) # fees included
+                logDeque.append((x_next + ' volume, ', max_volume))
+>>>>>>> 401c3f4c0c18abf2c1fbd7f7a9635d469e623298
         logDeque.append(('expected_profit: ', expected_profit))
         return expected_profit, max_volume, orders, logDeque
     except:
@@ -83,9 +122,28 @@ def trade(graph, monograph, cycle, balance):
         for i in range(len(cycle) - 1):
             x_cur = cycle[i]
             x_next = cycle[i + 1]
+<<<<<<< HEAD
             SELL = x_cur in monograph and x_next in monograph[x_cur]
             trade_balance, innerLogDeque = trade_iter(SELL, x_cur, x_next, trade_balance, orders[i][0])
             logDeque += innerLogDeque
+=======
+            # Sell Case
+            if x_cur in monograph and x_next in monograph[x_cur]:
+                symb = x_cur + x_next
+                logDeque.append((symb, trade_balance))
+                price = orders[i][0]
+                order_volume = truncate(trade_balance, precision)
+                logDeque.append(('SELL:', order_volume, price))
+                trade_balance = order_volume * price * (1 - fee)
+            # Buy Case
+            else:
+                symb = x_next + x_cur
+                logDeque.append((symb, trade_balance))
+                price = orders[i][0]
+                order_volume = truncate(trade_balance / price, precision)
+                logDeque.append(('BUY', order_volume, price))
+                trade_balance = order_volume * (1 - fee)
+>>>>>>> 401c3f4c0c18abf2c1fbd7f7a9635d469e623298
         logDeque.append(('End balance:', trade_balance))
     except:
         if logDeque[-1] is not None:
