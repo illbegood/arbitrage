@@ -1,10 +1,14 @@
 import json
-import datetime
+from datetime import datetime
 
-#def read(filepath):
-#    return json.load(filepath)
+JSON_PATH = "data/json/"
+SAMPLE_PATH = JSON_PATH + 'sample.json'
 
-def write(graph):
-    filepath = "../data/json/" + str(datetime.datetime.now())
-    with open(filepath, "w") as outfile:
-                json.dump(graph, outfile, indent=2)
+def load(filepath = SAMPLE_PATH):
+    with open(filepath, 'r') as f:
+        graph = json.load(f)
+        return graph
+
+def save(graph, filepath = JSON_PATH + str(datetime.now()) + '.json'):
+    with open(filepath, 'w+') as f:
+        json.dump(graph, f, indent=2)

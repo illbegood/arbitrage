@@ -37,7 +37,7 @@ def retrace_negative_loop(p, start):
 
 def bellman_ford(graph, source):
     d, p = initialize(graph, source)
-    for i in range(len(graph)-1): #Run this until is converges
+    for _ in range(len(graph)-1): #Run this until is converges
         for u in graph:
             for v in graph[u]: #For each neighbour of u
                 relax(u, v, graph, d, p) #Lets relax it

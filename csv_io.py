@@ -1,7 +1,11 @@
 import csv
+from datetime import datetime
 
-def write_graph(graph, filepath):
-    with open(filepath, 'w', newline='') as file:
+CSV_PATH = 'data/csv/'
+SAMPLE_PATH = CSV_PATH + 'sample.csv'
+
+def save(graph, filepath = CSV_PATH + str(datetime.now()) + '.csv'):
+    with open(filepath, 'w+', newline='') as file:
         writer = csv.writer(file, delimiter=',')
         writer.writerow([''] + list(graph))
         key_to_idx = {value: key for key, value in enumerate(graph)}
@@ -12,7 +16,7 @@ def write_graph(graph, filepath):
             l[key_to_idx[u]] = 1
             writer.writerow([u] + l)
 
-def read_graph(filepath):
+def load(filepath = SAMPLE_PATH):
     with open(filepath, newline='') as file:
         reader = csv.reader(file, delimiter=',')
         graph = {i: {} for i in reader.__next__()[1:]}
