@@ -37,8 +37,9 @@ def search_for_cycles(monograph, graph):
         process_cycle(monograph, graph)
     
 if __name__ == '__main__':
-    monograph, graph = create_monograph(), json_io.load('data/json/sample.json')
-    process_cycle(monograph, graph)
+    #monograph, graph = create_monograph(), json_io.load('data/json/sample.json')
+    monograph, graph = prefetch()
+    #process_cycle(monograph, graph)
     #monograph, graph = prefetch()
-    #run_timed(search_for_cycles, (monograph, graph), 3600)
+    run_timed(search_for_cycles, (monograph, graph), 3600)
 
