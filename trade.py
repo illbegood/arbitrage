@@ -25,10 +25,10 @@ def get_trade_args_iter(BUY, graph, x_cur, x_next, orders, max_volume, expected_
             max_volume *= price
         else:
             max_volume = volume * price
-    expected_profit = expected_profit / (price * (1 + FEE)) if BUY else expected_profit * (price * (1 - FEE))
+    expected_profit = expected_profit / (price / (1 - FEE)) if BUY else expected_profit * (price * (1 - FEE))
     expected_price = math.exp(-graph[x_cur][x_next])
     if BUY:
-        record = ('BUY ' + symb + ' price, expected price: ', price * (1 + FEE), 1 / expected_price)
+        record = ('BUY ' + symb + ' price, expected price: ', price / (1 - FEE), 1 / expected_price)
     else:
         record = ('SELL ' + symb + ' price, expected price: ', price * (1 - FEE), expected_price)
     logDeque.append(record) # fees included
