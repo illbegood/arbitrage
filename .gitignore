@@ -1,4 +1,5 @@
 __pycache__/*
+.vscode/*
 *.txt
 *.csv
 *.json
@@ -6,6 +7,5 @@ __pycache__/*
 *.ipynb
 log
 
-main.py
 telegram.py
-trade.py
+debug.py

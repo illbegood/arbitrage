@@ -1,40 +1,6 @@
-import csv
 import math
-import ccxt
-import time
-import threading
-import multiprocessing
-import logging
-import tabulate
-from process_cycle import process_cycle
-from bellman_ford import collect_negative_cycle
-import logger
-import fetch
-from const import precision, orderbook_depth
-
-def write_graph_csv(graph, filepath):
-    with open(filepath, 'w', newline='') as file:
-        writer = csv.writer(file, delimiter=',')
-        writer.writerow([''] + list(graph))
-        key_to_idx = {value: key for key, value in enumerate(graph)}
-        for u in graph:
-            l = [''] * len(graph)
-            for (key, value) in graph[u].items():
-                l[key_to_idx[key]] = value
-            l[key_to_idx[u]] = 1
-            writer.writerow([u] + l)
-
-def read_graph_scv(filepath):
-    with open(filepath, newline='') as file:
-        reader = csv.reader(file, delimiter=',')
-        graph = {i: {} for i in reader.__next__()[1:]}
-        for row in reader:
-            w = row[0]
-            for u, v in zip(graph, row[1:]):
-                if v != '' and w != u:
-                    graph[w][u] = float(v)
-    return graph
-    
+from tabulate import tabulate
+   
 def print_results(graph, path):
     if path == None:
         print("No opportunity here :(")
@@ -47,35 +13,8 @@ def print_results(graph, path):
             w_e = math.exp(-weight)
             table.append([w_e, 1/w_e, weight])
             graph_sum += weight
-        print(tabulate.tabulate(table, headers=["CUR1_CUR2", "CUR2_CUR1", "LN(CUR1->CUR2)"]))
+        print(tabulate(table, headers=["CUR1_CUR2", "CUR2_CUR1", "LN(CUR1->CUR2)"]))
         print('total sum:')
         print(graph_sum)
         print('profit')
         print(math.exp(-graph_sum))
-
-def run_timed(func, args, time):
-    p = multiprocessing.Process(target=func, args=args)
-    p.start()
-    p.join(time)
-    if (p.is_alive()):
-        p.terminate()
-        p.join()
-
-def search_for_cycles(exch, graph, monograph):
-    paths = []
-    while(True):
-        fetch.fetch(exch, graph)
-        path = collect_negative_cycle(graph)
-        if path not in paths and path != None:
-            paths.append(path)
-            balance = 100
-            process_cycle(graph, monograph, path, exch, balance)
-        time.sleep(1)
-import json  
-if __name__ == '__main__':
-    exch = fetch.binance()
-    monograph, graph = fetch.init(exch)
-    with open("sample.json", "a") as outfile:
-        json.dump(graph, outfile)
-    quit()
-    #run_timed(search_for_cycles, (exch, graph, monograph), 3600)
