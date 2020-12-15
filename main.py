@@ -6,8 +6,8 @@ import threading
 import json
 
 import logger
-import json_io
-import csv_io
+#import json_io
+#import csv_io
 from bellman_ford import collect_negative_cycle
 from trade import trade
 from fetch import prefetch, fetch, create_monograph
@@ -26,9 +26,10 @@ def process_cycle(monograph, graph):
         balance = 100
         logs = trade(graph, monograph, cycle, balance)
         logger.write(logs)
-        json_io.save(graph)
-        csv_io.save(graph)
-    time.sleep(1)
+        #json_io.save(graph)
+        #csv_io.save(graph)
+        time.sleep(1)
+    time.sleep(2)
 
 def search_for_cycles(monograph, graph):
     #paths = []
@@ -41,5 +42,6 @@ if __name__ == '__main__':
     monograph, graph = prefetch()
     #process_cycle(monograph, graph)
     #monograph, graph = prefetch()
-    run_timed(search_for_cycles, (monograph, graph), 3600)
+    search_for_cycles(monograph, graph)
+    #run_timed(search_for_cycles, (monograph, graph), 3600)
 

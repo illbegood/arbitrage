@@ -18,7 +18,7 @@ def monograph_add_edge(monograph, node_from, node_to):
 
 def get_weights(ask_price, bid_price):
     try:
-        w_to = - math.log(1 / ((ask_price / (1 - FEE))))
+        w_to = - math.log(1 / (ask_price / (1 - FEE)))
         w_from = - math.log(bid_price * (1 - FEE))
     except:
         w_to = float('inf')
@@ -60,7 +60,3 @@ def fetch(digraph):
     exch_tickers = binance.fetch_tickers()
     for nodes, ask_price, bid_price in exch_tickers:
         update_weights(nodes, ask_price, bid_price, digraph)
-
-
-
-

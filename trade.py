@@ -74,7 +74,7 @@ def trade(graph, monograph, cycle, balance):
         expected_profit, trade_balance, orders, innerLogDeque = get_trade_args(graph, monograph, cycle, balance)
         logDeque += innerLogDeque
         
-        if trade_balance < 5:
+        if trade_balance < 1:
             logDeque.append('low volume: ' + str(trade_balance))
             return
         if expected_profit <= 1:
