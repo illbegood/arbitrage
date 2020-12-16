@@ -10,8 +10,8 @@ def truncate(f, n = PRECISION):
 
 def get_trade_args_iter(BUY, graph, x_cur, x_next, orders, max_volume, expected_profit):
     logDeque = deque()
-    symb = x_next + x_cur if BUY else x_cur + x_next
-    order = binance.fetch_orderbook(symb)
+    symbol = x_next + x_cur if BUY else x_cur + x_next
+    order = binance.fetch_orderbook(symbol)
     order = order['asks' if BUY else 'bids'][0]
     price, volume = float(order[0]), float(order[1])
     orders.append([price, volume])
@@ -28,9 +28,9 @@ def get_trade_args_iter(BUY, graph, x_cur, x_next, orders, max_volume, expected_
     expected_profit = expected_profit / (price / (1 - FEE)) if BUY else expected_profit * (price * (1 - FEE))
     expected_price = math.exp(-graph[x_cur][x_next])
     if BUY:
-        record = ('BUY ' + symb + ' price, expected price: ', price / (1 - FEE), 1 / expected_price)
+        record = ('BUY ' + symbol + ' price, expected price: ', price / (1 - FEE), 1 / expected_price)
     else:
-        record = ('SELL ' + symb + ' price, expected price: ', price * (1 - FEE), expected_price)
+        record = ('SELL ' + symbol + ' price, expected price: ', price * (1 - FEE), expected_price)
     logDeque.append(record) # fees included
     logDeque.append((x_next + ' volume, ', max_volume))
     return max_volume, expected_profit, logDeque
@@ -59,17 +59,23 @@ def get_trade_args(graph, monograph, cycle, balance):
 
 def trade_iter(BUY, x_cur, x_next, trade_balance, price):
     logDeque = deque()
-    symb = x_next + x_cur if BUY else x_cur + x_next
+    symbol = x_next + x_cur if BUY else x_cur + x_next
     logDeque.append((symb, trade_balance))
     order_volume = trade_balance / price if BUY else trade_balance
     order_volume = truncate(order_volume)
-    logDeque.append(('BUY:' if BUY else 'SELL:', order_volume, price))
+    if BUY:
+        #binance.limit_order(symbol, 'BUY', order_volume, price)
+        logDeque.append(('BUY:', order_volume, price))
+    else:
+        #binance.limit_order(symbol, 'SELL', order_volume, price)
+        logDeque.append(('SELL:', order_volume, price))
     trade_balance = order_volume * (1 - FEE) if BUY else order_volume * price * (1 - FEE)
     return trade_balance, logDeque
 
-def trade(graph, monograph, cycle, balance):
+def trade(graph, monograph, cycle):
     logDeque = deque()
     logDeque.append('------------------------')
+    balance = binance.fetch_balance()
     try:
         expected_profit, trade_balance, orders, innerLogDeque = get_trade_args(graph, monograph, cycle, balance)
         logDeque += innerLogDeque

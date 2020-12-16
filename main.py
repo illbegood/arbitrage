@@ -23,8 +23,7 @@ def run_timed(func, args, time):
 def process_cycle(monograph, graph):
     cycle = collect_negative_cycle(graph)
     if cycle != None:
-        balance = 100
-        logs = trade(graph, monograph, cycle, balance)
+        logs = trade(graph, monograph, cycle)
         logger.write(logs)
         #json_io.save(graph)
         #csv_io.save(graph)
