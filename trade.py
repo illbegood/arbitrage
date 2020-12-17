@@ -64,10 +64,10 @@ def trade_iter(BUY, x_cur, x_next, trade_balance, price):
     order_volume = trade_balance / price if BUY else trade_balance
     order_volume = truncate(order_volume)
     if BUY:
-        #binance.limit_order(symbol, 'BUY', order_volume, price)
+        binance.limit_order(symbol, 'BUY', order_volume, price)
         logDeque.append(('BUY:', order_volume, price))
     else:
-        #binance.limit_order(symbol, 'SELL', order_volume, price)
+        binance.limit_order(symbol, 'SELL', order_volume, price)
         logDeque.append(('SELL:', order_volume, price))
     trade_balance = order_volume * (1 - FEE) if BUY else order_volume * price * (1 - FEE)
     return trade_balance, logDeque
