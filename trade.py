@@ -60,7 +60,7 @@ def get_trade_args(graph, monograph, cycle, balance):
 def trade_iter(BUY, x_cur, x_next, trade_balance, price):
     logDeque = deque()
     symbol = x_next + x_cur if BUY else x_cur + x_next
-    logDeque.append((symb, trade_balance))
+    logDeque.append((symbol, trade_balance))
     order_volume = trade_balance / price if BUY else trade_balance
     order_volume = truncate(order_volume)
     if BUY:
