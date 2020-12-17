@@ -51,10 +51,11 @@ def update_weights(nodes, ask_price, bid_price, digraph):
 def prefetch():
     monograph = {}
     digraph = {}
+    lot_restrictions = binance.get_lot_restrictions()
     exch_tickers = binance.fetch_tickers()
     for nodes, ask_price, bid_price in exch_tickers:
         add_edges(nodes, ask_price, bid_price, monograph, digraph)
-    return monograph, digraph
+    return monograph, digraph, lot_restrictions
 
 def fetch(digraph):
     exch_tickers = binance.fetch_tickers()

@@ -23,6 +23,13 @@ def get_quote_assets():
     raw_symbols = response['symbols']
     quote_assets = np.unique(np.array(list(map(lambda x: x['quoteAsset'], raw_symbols))))
     return quote_assets
+    
+def get_lot_restrictions():
+    response = requests.get(SYMBOLS_URL).json()
+    raw_symbols = response['symbols']
+    lot_restrictions = list(map(lambda x: {x['symbol']: float(x['filters'][2]['minQty'])}, raw_symbols))
+    lot_restrictions = dict((key,d[key]) for d in lot_restrictions for key in d)
+    return lot_restrictions
 
 def split_symbol(symbol):
     if symbol[-3:] in QUOTE_ASSETS:
@@ -87,4 +94,4 @@ def limit_order(symbol, side, volume, price):
         "quantity": volume,
         "price": str(price)
     }
-    send_signed_request('POST', ORDER_URL, params)
+    return send_signed_request('POST', ORDER_URL, params)
