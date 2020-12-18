@@ -20,27 +20,27 @@ def run_timed(func, args, time):
         p.terminate()
         p.join()
 
-def process_cycle(monograph, graph, lot_restrictions):
+def process_cycle(monograph, graph, restrictions):
     cycle = collect_negative_cycle(graph)
     if cycle != None:
-        logs = trade(graph, monograph, cycle, lot_restrictions)
+        logs = trade(graph, monograph, cycle, restrictions)
         logger.write(logs)
         #json_io.save(graph)
         #csv_io.save(graph)
         time.sleep(1)
     time.sleep(2)
 
-def search_for_cycles(monograph, graph, lot_restrictions):
+def search_for_cycles(monograph, graph, restrictions):
     #paths = []
     while(True):
         fetch(graph)
-        process_cycle(monograph, graph, lot_restrictions)
+        process_cycle(monograph, graph, restrictions)
     
 if __name__ == '__main__':
     #monograph, graph = create_monograph(), json_io.load('data/json/sample.json')
-    monograph, graph, lot_restrictions = prefetch()
+    monograph, graph, restrictions = prefetch()
     #process_cycle(monograph, graph)
     #monograph, graph = prefetch()
-    search_for_cycles(monograph, graph, lot_restrictions)
+    search_for_cycles(monograph, graph, restrictions)
     #run_timed(search_for_cycles, (monograph, graph), 3600)
 

@@ -5,16 +5,16 @@ from logger import write
 from const import FEE, PRECISION, ORDERBOOK_DEPTH
 from traceback import format_exc
 
-#def truncate(f, n = PRECISION):
-#    return math.floor(f * 10 ** n) / 10 ** n
+def set_precision(f, n = PRECISION):
+    return math.floor(f * 10 ** n) / 10 ** n
     
 def truncate(f, min_lot):
     return min_lot * (f // min_lot)
 
-def get_trade_args_iter(BUY, graph, x_cur, x_next, lot_restrictions, orders, max_volume, expected_profit):
+def get_trade_args_iter(BUY, graph, x_cur, x_next, restrictions, orders, max_volume, expected_profit):
     logDeque = deque()
     symbol = x_next + x_cur if BUY else x_cur + x_next
-    min_lot = lot_restrictions[symbol]
+    min_lot, min_notional = restrictions[symbol][0], restrictions[symbol][1]
     order = binance.fetch_orderbook(symbol)
     order = order['asks' if BUY else 'bids'][0]
     price, volume = float(order[0]), float(order[1])
@@ -24,11 +24,15 @@ def get_trade_args_iter(BUY, graph, x_cur, x_next, lot_restrictions, orders, max
             max_volume = truncate(max_volume / price, min_lot)
         else:
             max_volume = truncate(volume, min_lot)
+        if max_volume * price < min_notional:
+            max_volume = 0
     else:
         if volume > max_volume:
             max_volume = truncate(price * max_volume, min_lot)
         else:
             max_volume = truncate(price * volume, min_lot)
+        if max_volume < min_notional:
+            max_volume = 0
 
     expected_profit = expected_profit / (price / (1 - FEE)) if BUY else expected_profit * (price * (1 - FEE))
     expected_price = math.exp(-graph[x_cur][x_next])
@@ -41,7 +45,7 @@ def get_trade_args_iter(BUY, graph, x_cur, x_next, lot_restrictions, orders, max
     return max_volume, expected_profit, logDeque
 
 
-def get_trade_args(graph, monograph, cycle, balance, lot_restrictions):
+def get_trade_args(graph, monograph, cycle, balance, restrictions):
     logDeque = deque()
     try:
         logDeque.append(cycle)
@@ -52,7 +56,7 @@ def get_trade_args(graph, monograph, cycle, balance, lot_restrictions):
             x_cur = cycle[i]
             x_next = cycle[i + 1]
             BUY = x_cur in monograph.keys() and x_next in monograph[x_cur]
-            max_volume, expected_profit, innerLogDeque = get_trade_args_iter(BUY, graph, x_cur, x_next, lot_restrictions, orders, max_volume, expected_profit)
+            max_volume, expected_profit, innerLogDeque = get_trade_args_iter(BUY, graph, x_cur, x_next, restrictions, orders, max_volume, expected_profit)
             logDeque += innerLogDeque
         logDeque.append(('expected_profit: ', expected_profit))
         return expected_profit, max_volume, orders, logDeque
@@ -62,28 +66,28 @@ def get_trade_args(graph, monograph, cycle, balance, lot_restrictions):
             logDeque.append(None)
         return None, None, None, logDeque
 
-def trade_iter(BUY, x_cur, x_next, trade_balance, price, lot_restrictions):
+def trade_iter(BUY, x_cur, x_next, trade_balance, price, restrictions):
     logDeque = deque()
     symbol = x_next + x_cur if BUY else x_cur + x_next
     logDeque.append((symbol, trade_balance))
-    min_lot = lot_restrictions[symbol]
+    min_lot = restrictions[symbol][0]
     order_volume = trade_balance / price if BUY else trade_balance
     order_volume = truncate(order_volume, min_lot)
     if BUY:
-        print(binance.limit_order(symbol, 'BUY', order_volume, price))
-        logDeque.append(('BUY:', order_volume, price))
+        print(binance.limit_order(symbol, 'BUY', order_volume, set_precision(price)))
+        logDeque.append(('BUY:', order_volume, set_precision(price)))
     else:
-        print(binance.limit_order(symbol, 'SELL', order_volume, price))
-        logDeque.append(('SELL:', order_volume, price))
+        print(binance.limit_order(symbol, 'SELL', order_volume, set_precision(price)))
+        logDeque.append(('SELL:', order_volume, set_precision(price)))
     trade_balance = order_volume * (1 - FEE) if BUY else order_volume * price * (1 - FEE)
     return trade_balance, logDeque
 
-def trade(graph, monograph, cycle, lot_restrictions):
+def trade(graph, monograph, cycle, restrictions):
     logDeque = deque()
     logDeque.append('------------------------')
     balance = binance.fetch_balance()
     try:
-        expected_profit, trade_balance, orders, innerLogDeque = get_trade_args(graph, monograph, cycle, balance, lot_restrictions)
+        expected_profit, trade_balance, orders, innerLogDeque = get_trade_args(graph, monograph, cycle, balance, restrictions)
         logDeque += innerLogDeque
         
         if trade_balance < 1:
@@ -99,7 +103,7 @@ def trade(graph, monograph, cycle, lot_restrictions):
             x_cur = cycle[i]
             x_next = cycle[i + 1]
             BUY = x_cur in monograph.keys() and x_next in monograph[x_cur]
-            trade_balance, innerLogDeque = trade_iter(BUY, x_cur, x_next, trade_balance, orders[i][0], lot_restrictions)
+            trade_balance, innerLogDeque = trade_iter(BUY, x_cur, x_next, trade_balance, orders[i][0], restrictions)
             logDeque += innerLogDeque
         logDeque.append(('End balance:', trade_balance))
     except:

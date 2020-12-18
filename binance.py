@@ -24,12 +24,12 @@ def get_quote_assets():
     quote_assets = np.unique(np.array(list(map(lambda x: x['quoteAsset'], raw_symbols))))
     return quote_assets
     
-def get_lot_restrictions():
+def get_restrictions():
     response = requests.get(SYMBOLS_URL).json()
     raw_symbols = response['symbols']
-    lot_restrictions = list(map(lambda x: {x['symbol']: float(x['filters'][2]['minQty'])}, raw_symbols))
-    lot_restrictions = dict((key,d[key]) for d in lot_restrictions for key in d)
-    return lot_restrictions
+    restrictions = list(map(lambda x: {x['symbol']: [float(x['filters'][2]['minQty']), float(x['filters'][3]['minNotional'])]}, raw_symbols))
+    restrictions = dict((key,d[key]) for d in restrictions for key in d)
+    return restrictions
 
 def split_symbol(symbol):
     if symbol[-3:] in QUOTE_ASSETS:
