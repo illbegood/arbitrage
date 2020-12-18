@@ -5,7 +5,12 @@ __pycache__/*
 *.json
 .DS_STORE
 *.ipynb
+
 log
+connect
+
+arbitrage.pem
+
 
 telegram.py
 debug.py

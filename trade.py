@@ -2,7 +2,7 @@ import math
 import binance
 from collections import deque
 from logger import write
-from const import FEE, PRECISION, ORDERBOOK_DEPTH
+from const import FEE, PRECISION, ORDERBOOK_DEPTH, RELEASE
 from traceback import format_exc
 
 def set_precision(f, n = PRECISION):
@@ -74,10 +74,12 @@ def trade_iter(BUY, x_cur, x_next, trade_balance, price, restrictions):
     order_volume = trade_balance / price if BUY else trade_balance
     order_volume = truncate(order_volume, min_lot)
     if BUY:
-        print(binance.limit_order(symbol, 'BUY', order_volume, set_precision(price)))
+        if RELEASE:
+            print(binance.limit_order(symbol, 'BUY', order_volume, set_precision(price)))
         logDeque.append(('BUY:', order_volume, set_precision(price)))
     else:
-        print(binance.limit_order(symbol, 'SELL', order_volume, set_precision(price)))
+        if RELEASE:
+            print(binance.limit_order(symbol, 'SELL', order_volume, set_precision(price)))
         logDeque.append(('SELL:', order_volume, set_precision(price)))
     trade_balance = order_volume * (1 - FEE) if BUY else order_volume * price * (1 - FEE)
     return trade_balance, logDeque
