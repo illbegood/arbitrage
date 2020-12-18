@@ -28,6 +28,7 @@ def get_trade_args_iter(BUY, graph, x_cur, x_next, restrictions, orders, max_vol
         price, volume = float(order[0]), float(order[1])
         orders.append([price, volume])
         logDeque.append((symbol, '(BUY)' if BUY else '(SELL)'))
+        logDeque.append(('\t', 'min_lot:', min_lot, 'min_notional:', min_notional))
         logDeque.append(('\t', 'price', price, 'volume', volume))
         if BUY:
             if volume * price > max_volume:
@@ -53,9 +54,9 @@ def get_trade_args_iter(BUY, graph, x_cur, x_next, restrictions, orders, max_vol
         expected_profit = expected_profit / \
             (price / (1 - FEE)) if BUY else expected_profit * (price * (1 - FEE))
         if BUY:
-            record = ('resulting price:', price / (1 - FEE), x_next, 'resulting volume:', max_volume)
+            record = ('\t', 'resulting price:', price / (1 - FEE), 'resulting volume:', max_volume)
         else:
-            record = ('resulting price:', price * (1 - FEE), x_next, 'resulting volume:', max_volume)
+            record = ('\t', 'resulting price:', price * (1 - FEE), 'resulting volume:', max_volume)
         logDeque.append(record)  # fees included
         return max_volume, expected_profit, logDeque
     except:
