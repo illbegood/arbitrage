@@ -50,9 +50,9 @@ def bellman_ford(graph, source):
                 return(retrace_negative_loop(p, source))
     return None
             
-def collect_negative_cycle(graph):
+def collect_negative_cycle(graph, start='USDT'):
     #paths = []
-    path = bellman_ford(graph, 'USDT')
+    path = bellman_ford(graph, start)
     #if path not in paths and not None:
     #    paths.append(path)
     return path

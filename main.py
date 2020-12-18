@@ -21,14 +21,16 @@ def run_timed(func, args, time):
         p.join()
 
 def process_cycle(monograph, graph, restrictions):
-    cycle = collect_negative_cycle(graph)
-    if cycle != None:
-        logs = trade(graph, monograph, cycle, restrictions)
-        logger.write(logs)
-        #json_io.save(graph)
-        #csv_io.save(graph)
-        time.sleep(1)
-    time.sleep(2)
+    currencies = ['USDT', 'BTC', 'ETH']
+    for cur in currencies:
+        cycle = collect_negative_cycle(graph, cur)
+        if cycle != None:
+            logs = trade(graph, monograph, cycle, restrictions)
+            logger.write(logs)
+            #json_io.save(graph)
+            #csv_io.save(graph)
+            time.sleep(1)
+        time.sleep(2)
 
 def search_for_cycles(monograph, graph, restrictions):
     #paths = []

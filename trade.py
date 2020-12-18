@@ -16,6 +16,8 @@ def get_trade_args_iter(BUY, graph, x_cur, x_next, restrictions, orders, max_vol
     symbol = x_next + x_cur if BUY else x_cur + x_next
     min_lot, min_notional = restrictions[symbol][0], restrictions[symbol][1]
     order = binance.fetch_orderbook(symbol)
+    if len(order) == 0:
+        raise Exception("Order is Empty!")
     order = order['asks' if BUY else 'bids'][0]
     price, volume = float(order[0]), float(order[1])
     orders.append([price, volume])

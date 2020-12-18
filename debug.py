@@ -41,11 +41,9 @@ import logger
 
 monograph, graph, restrictions = prefetch()
 profits = []
+_triangles_ = triangles(graph)
+_triangles_ = list(filter(lambda x: 'USDT' in x or 'BTC' in x or 'ETH' in x, _triangles_))
 for t in triangles(graph):
     logs = trade(graph, monograph, t, restrictions)
     logger.write(logs)
-    for tpl in logs:
-        if 'expected_profit: ' in tpl:
-            profits.append(tpl[1])
-print(sum(profits)/len(profits))
 
